@@ -14,6 +14,9 @@
         "tsConfig": "libs/shared/interfaces/tsconfig.lib.json",
         "assets": ["libs/shared/interfaces/*.md"]
       }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
     }
   }
 }

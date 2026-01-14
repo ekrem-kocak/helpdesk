@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@helpdesk/shared/interfaces": ["libs/shared/interfaces/src/index.ts"]
+      "@helpdesk/shared/interfaces": ["libs/shared/interfaces/src/index.ts"],
+      "@helpdesk/data-access-db": ["libs/api/data-access-db/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

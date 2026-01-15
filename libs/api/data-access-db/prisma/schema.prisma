@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Users (Customers and Support Team)
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      Role     @default(USER)
+  tickets   Ticket[] // Tickets created by the user
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Support Tickets
+model Ticket {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  status      Status   @default(OPEN)
+  priority    Priority @default(MEDIUM)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPPORT
+}
+
+enum Status {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}

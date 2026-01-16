@@ -45,6 +45,9 @@
       "linter": "eslint",
       "style": "scss",
       "unitTestRunner": "vitest-angular"
+    },
+    "@nx/nest:library": {
+      "linter": "eslint"
     }
   },
   "plugins": [

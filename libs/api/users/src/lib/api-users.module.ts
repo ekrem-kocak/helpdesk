@@ -1,8 +1,9 @@
+import { ApiDataAccessDbModule } from '@helpdesk/api/data-access-db';
 import { Module } from '@nestjs/common';
 import { UsersService } from './users.service';
 
 @Module({
-  controllers: [],
+  imports: [ApiDataAccessDbModule],
   providers: [UsersService],
   exports: [UsersService],
 })

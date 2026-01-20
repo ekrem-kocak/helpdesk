@@ -15,8 +15,11 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@helpdesk/shared/interfaces": ["libs/shared/interfaces/src/index.ts"],
       "@helpdesk/api/data-access-db": ["libs/api/data-access-db/src/index.ts"],
+      "@helpdesk/api/auth": ["libs/api/auth/src/index.ts"],
+      "@helpdesk/api/users": ["libs/api/users/src/index.ts"],
+
+      "@helpdesk/shared/interfaces": ["libs/shared/interfaces/src/index.ts"],
       "@helpdesk/shared/config": ["libs/shared/config/src/index.ts"]
     }
   },

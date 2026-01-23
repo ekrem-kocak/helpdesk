@@ -22,6 +22,14 @@ export class EnvironmentVariables {
   @IsNumber()
   @IsNotEmpty()
   BCRYPT_SALT_ROUNDS!: number;
+
+  @IsString()
+  @IsNotEmpty()
+  REDIS_URL!: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  REDIS_TTL!: number;
 }
 
 export function validate(config: Record<string, unknown>) {

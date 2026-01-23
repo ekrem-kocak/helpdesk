@@ -1,5 +1,5 @@
 import { Role, User } from '@helpdesk/api/data-access-db';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 
 export class UserEntity implements User {
@@ -14,6 +14,7 @@ export class UserEntity implements User {
 
   // Exclude password from JSON response
   @Exclude()
+  @ApiHideProperty()
   password!: string;
 
   @ApiProperty()

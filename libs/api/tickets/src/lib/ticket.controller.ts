@@ -1,5 +1,6 @@
 import { CurrentUser, JwtAuthGuard } from '@helpdesk/api/auth';
 import { UserEntity } from '@helpdesk/api/users';
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import {
   Body,
   Controller,
@@ -8,6 +9,7 @@ import {
   Patch,
   Post,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateTicketDto } from './dto/create-ticket.dto';
@@ -32,6 +34,9 @@ export class TicketController {
     return new TicketEntity(ticket);
   }
 
+  @UseInterceptors(CacheInterceptor)
+  @CacheKey('all-tickets')
+  @CacheTTL(30000)
   @Get()
   @ApiOperation({ summary: 'Get all tickets' })
   async findAll(): Promise<TicketEntity[]> {

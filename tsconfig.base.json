@@ -19,7 +19,7 @@
       "@helpdesk/api/auth": ["libs/api/auth/src/index.ts"],
       "@helpdesk/api/users": ["libs/api/users/src/index.ts"],
       "@helpdesk/api/tickets": ["libs/api/tickets/src/index.ts"],
-
+      "@helpdesk/api/cache": ["libs/api/cache/src/index.ts"],
       "@helpdesk/shared/interfaces": ["libs/shared/interfaces/src/index.ts"],
       "@helpdesk/shared/config": ["libs/shared/config/src/index.ts"]
     }

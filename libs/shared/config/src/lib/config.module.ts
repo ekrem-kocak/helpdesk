@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import aiConfig from './config/ai.config';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
 import mailConfig from './config/mail.config';
@@ -17,6 +18,7 @@ import { validate } from './env.validation';
         securityConfig,
         redisConfig,
         mailConfig,
+        aiConfig,
       ],
       validate: validate,
     }),

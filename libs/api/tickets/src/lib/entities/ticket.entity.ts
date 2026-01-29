@@ -32,6 +32,12 @@ export class TicketEntity implements Ticket {
   @Type(() => UserEntity)
   user!: UserEntity;
 
+  @ApiProperty({ nullable: true })
+  aiSummary!: string | null;
+
+  @ApiProperty({ nullable: true })
+  aiSuggestedReply!: string | null;
+
   constructor(partial: Partial<TicketEntity>) {
     Object.assign(this, partial);
   }

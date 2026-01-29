@@ -50,6 +50,10 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   MAIL_FROM!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  GEMINI_API_KEY!: string;
 }
 
 export function validate(config: Record<string, unknown>) {

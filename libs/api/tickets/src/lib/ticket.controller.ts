@@ -4,6 +4,7 @@ import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -66,5 +67,12 @@ export class TicketController {
   ) {
     const ticket = await this.ticketService.update(id, updateTicketDto);
     return new TicketEntity(ticket);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a ticket by ID' })
+  async delete(@Param('id') id: string) {
+    await this.ticketService.delete(id);
+    return { message: 'Ticket deleted successfully' };
   }
 }

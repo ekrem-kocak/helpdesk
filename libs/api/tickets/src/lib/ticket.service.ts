@@ -1,14 +1,18 @@
 import { Priority, PrismaService } from '@helpdesk/api/data-access-db';
+import { QueueService } from '@helpdesk/api/queue';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 
 @Injectable()
 export class TicketService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly queueService: QueueService,
+  ) {}
 
   async create(userId: string, createTicketDto: CreateTicketDto) {
-    return this.prisma.ticket.create({
+    const ticket = await this.prisma.ticket.create({
       data: {
         title: createTicketDto.title,
         description: createTicketDto.description,
@@ -21,6 +25,10 @@ export class TicketService {
         user: true, // return the user who created the ticket
       },
     });
+
+    await this.queueService.addTicketCreatedJob(ticket.user.email, ticket.id);
+
+    return ticket;
   }
 
   async findAll() {

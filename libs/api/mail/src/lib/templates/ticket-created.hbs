@@ -1,0 +1,39 @@
+<html>
+  <head>
+    <style>
+      body {
+        font-family: sans-serif;
+      }
+      .container {
+        border: 1px solid #ccc;
+        padding: 20px;
+        border-radius: 8px;
+      }
+      .header {
+        color: #2c3e50;
+      }
+      .footer {
+        font-size: 12px;
+        color: #7f8c8d;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <h1 class='header'>Hello {{name}}! 👋</h1>
+      <p>Your support request has been successfully received.</p>
+
+      <p><b>Ticket ID:</b> {{ticketId}}</p>
+      <p><b>Subject:</b> {{title}}</p>
+
+      <p>Our team will review your request and get back to you as soon as
+        possible.</p>
+
+      <div class='footer'>
+        <p>This email was sent automatically. Please do not reply.</p>
+        <p>HelpDesk System © 2026</p>
+      </div>
+    </div>
+  </body>
+</html>

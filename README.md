@@ -1,101 +1,209 @@
-# Helpdesk
+# Helpdesk System
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+Modern, scalable, and AI-powered helpdesk management system.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+## Features
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+- 🎫 **Ticket Management** - Comprehensive ticket creation, updating, and tracking system
+- 🔐 **JWT Authentication** - Secure user authentication
+- 🤖 **AI Integration** - Automated response suggestions with Google Gemini
+- 📧 **Email Notifications** - Asynchronous email delivery
+- ⚡ **Cache Management** - Performance optimization with Redis
+- 🔄 **Queue Management** - Background job processing with BullMQ
+- 🛡️ **Rate Limiting** - API security and abuse prevention
+- 📊 **Swagger API Documentation** - Automatic API reference
 
-## Run tasks
+## Tech Stack
 
-To run the dev server for your app, use:
+### Backend
 
-```sh
-npx nx serve client
+- **Framework:** NestJS
+- **Database:** PostgreSQL + Prisma ORM
+- **Cache:** Redis
+- **Queue:** BullMQ
+- **Authentication:** JWT + Passport
+- **AI:** Google Gemini API
+- **Email:** Nodemailer
+
+### Frontend
+
+- **Framework:** Angular 21
+- **Build Tool:** Nx
+
+### DevOps
+
+- **Monorepo:** Nx Workspace
+- **Package Manager:** pnpm
+- **Code Quality:** ESLint + Prettier + Husky
+
+## Prerequisites
+
+- Node.js >= 18
+- pnpm >= 8
+- PostgreSQL >= 14
+- Redis >= 6
+- Docker (optional)
+
+## Installation
+
+1. Clone the repository:
+
+```bash
+git clone <repository-url>
+cd helpdesk
 ```
 
-To create a production bundle:
+2. Install dependencies:
 
-```sh
-npx nx build client
+```bash
+pnpm install
 ```
 
-To see all available targets to run for a project, run:
+3. Configure environment variables:
 
-```sh
-npx nx show project client
+```bash
+cp .env.example .env
+# Update .env file with your own values
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+4. Start PostgreSQL and Redis with Docker:
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Add new projects
-
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-Use the plugin's generator to create new projects.
-
-To generate a new application, use:
-
-```sh
-npx nx g @nx/angular:app demo
+```bash
+docker-compose up -d
 ```
 
-To generate a new library, use:
+5. Run database migrations:
 
-```sh
-npx nx g @nx/angular:lib mylib
+```bash
+pnpm prisma:migrate:dev
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+6. Generate Prisma Client:
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Set up CI!
-
-### Step 1
-
-To connect to Nx Cloud, run the following command:
-
-```sh
-npx nx connect
+```bash
+pnpm prisma:generate
 ```
 
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
+## Development
 
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### Start all applications
 
-### Step 2
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
+```bash
+pnpm start
 ```
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### Start API only
 
-## Install Nx Console
+```bash
+pnpm start:api
+```
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+API runs on `http://localhost:3000` by default.
+Swagger documentation: `http://localhost:3000/api`
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### Start Frontend only
 
-## Useful links
+```bash
+pnpm start:client
+```
 
-Learn more:
+Frontend runs on `http://localhost:4200` by default.
 
-- [Learn more about this workspace setup](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### Database Management
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+```bash
+# View database with Prisma Studio
+pnpm prisma:studio
+
+# Create new migration
+pnpm prisma:migrate:dev
+
+# Apply migrations in production
+pnpm prisma:migrate:deploy
+```
+
+## Build
+
+### Build all applications
+
+```bash
+pnpm build:all
+```
+
+### Build API only
+
+```bash
+pnpm build:api
+```
+
+### Build Client only
+
+```bash
+pnpm build:client
+```
+
+## Testing and Linting
+
+```bash
+# Run all tests
+pnpm test:all
+
+# Test only affected code
+pnpm test:affected
+
+# Run lint checks
+pnpm lint:all
+
+# Auto-fix lint errors
+pnpm lint:all:fix
+
+# Format code
+pnpm format
+```
+
+## Project Structure
+
+```
+helpdesk/
+├── apps/
+│   ├── api/              # NestJS backend application
+│   └── client/           # Angular frontend application
+├── libs/
+│   ├── api/
+│   │   ├── auth/         # Authentication module
+│   │   ├── tickets/      # Ticket management
+│   │   ├── users/        # User management
+│   │   ├── ai/           # AI integration
+│   │   ├── mail/         # Email service
+│   │   ├── queue/        # Queue management
+│   │   ├── cache/        # Cache management
+│   │   └── data-access-db/ # Prisma + Database
+│   └── shared/
+│       ├── config/       # Shared configuration
+│       └── interfaces/   # Shared types
+└── docker-compose.yml    # PostgreSQL + Redis
+```
+
+## API Endpoints
+
+API documentation is available at `http://localhost:3000/api`.
+
+### Main Endpoints
+
+- `POST /auth/register` - User registration
+- `POST /auth/login` - User login
+- `GET /tickets` - List tickets
+- `POST /tickets` - Create new ticket
+- `GET /tickets/:id` - Get ticket details
+- `PATCH /tickets/:id` - Update ticket
+
+## Contributing
+
+1. Create a feature branch (`git checkout -b feature/amazing-feature`)
+2. Commit your changes (`git commit -m 'feat: Add amazing feature'`)
+3. Push to the branch (`git push origin feature/amazing-feature`)
+4. Open a Pull Request
+
+## License
+
+MIT

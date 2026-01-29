@@ -1,3 +1,4 @@
+import { ApiMailModule } from '@helpdesk/api/mail';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -20,6 +21,8 @@ import { QueueService } from './queue.service';
     BullModule.registerQueue({
       name: QUEUE_NAMES.EMAIL,
     }),
+
+    ApiMailModule,
   ],
   providers: [QueueService, EmailProcessor],
   exports: [BullModule, QueueService],

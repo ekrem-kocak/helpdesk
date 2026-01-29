@@ -7,10 +7,15 @@ import { JOB_NAMES, QUEUE_NAMES } from './queue.constants';
 export class QueueService {
   constructor(@InjectQueue(QUEUE_NAMES.EMAIL) private emailQueue: Queue) {}
 
-  async addTicketCreatedJob(email: string, ticketId: string) {
+  async addTicketCreatedJob(
+    name: string,
+    email: string,
+    ticketId: string,
+    title: string,
+  ) {
     await this.emailQueue.add(
       JOB_NAMES.SEND_TICKET_CREATED_EMAIL, // Job name
-      { email, ticketId }, // Job data
+      { name, email, ticketId, title }, // Job data
       {
         attempts: 3, // Retry 3 times if an error occurs
         backoff: 5000, // Wait 5 seconds between retries

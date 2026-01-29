@@ -26,7 +26,12 @@ export class TicketService {
       },
     });
 
-    await this.queueService.addTicketCreatedJob(ticket.user.email, ticket.id);
+    await this.queueService.addTicketCreatedJob(
+      ticket.user.name ?? 'User',
+      ticket.user.email,
+      ticket.id,
+      ticket.title,
+    );
 
     return ticket;
   }

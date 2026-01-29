@@ -30,6 +30,26 @@ export class EnvironmentVariables {
   @IsNumber()
   @IsNotEmpty()
   REDIS_TTL!: number;
+
+  @IsString()
+  @IsNotEmpty()
+  MAIL_HOST!: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  MAIL_PORT!: number;
+
+  @IsString()
+  @IsNotEmpty()
+  MAIL_USER!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  MAIL_PASS!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  MAIL_FROM!: string;
 }
 
 export function validate(config: Record<string, unknown>) {

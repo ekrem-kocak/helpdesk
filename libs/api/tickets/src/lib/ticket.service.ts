@@ -85,7 +85,7 @@ export class TicketService {
   }
 
   async delete(id: string) {
-    return this.prisma.ticket.delete({
+    return this.prisma.ticket.softDelete({
       where: { id },
     });
   }

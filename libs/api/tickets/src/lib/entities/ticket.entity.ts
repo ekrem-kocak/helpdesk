@@ -38,6 +38,9 @@ export class TicketEntity implements Ticket {
   @ApiProperty({ nullable: true })
   aiSuggestedReply!: string | null;
 
+  @ApiProperty({ nullable: true })
+  deletedAt: Date | null = null;
+
   constructor(partial: Partial<TicketEntity>) {
     Object.assign(this, partial);
   }

@@ -72,7 +72,6 @@ export class TicketController {
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a ticket by ID' })
   async delete(@Param('id') id: string) {
-    await this.ticketService.delete(id);
-    return { message: 'Ticket deleted successfully' };
+    return this.ticketService.delete(id);
   }
 }

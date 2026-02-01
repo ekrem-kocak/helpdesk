@@ -1,5 +1,5 @@
-import { Priority, Status, Ticket } from '@helpdesk/api/data-access-db';
 import { UserEntity } from '@helpdesk/api/users';
+import { Priority, Status, Ticket, User } from '@helpdesk/shared/interfaces';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -28,7 +28,7 @@ export class TicketEntity implements Ticket {
   @ApiProperty()
   updatedAt!: Date;
 
-  @ApiProperty({ type: UserEntity })
+  @ApiProperty({ type: () => UserEntity })
   @Type(() => UserEntity)
   user!: UserEntity;
 
@@ -41,7 +41,7 @@ export class TicketEntity implements Ticket {
   @ApiProperty({ nullable: true })
   deletedAt: Date | null = null;
 
-  constructor(partial: Partial<TicketEntity>) {
+  constructor(partial: any) {
     Object.assign(this, partial);
   }
 }

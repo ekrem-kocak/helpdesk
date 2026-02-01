@@ -1,6 +1,7 @@
 import { AiService } from '@helpdesk/api/ai';
-import { Priority, PrismaService } from '@helpdesk/api/data-access-db';
+import { PrismaService } from '@helpdesk/api/data-access-db';
 import { QueueService } from '@helpdesk/api/queue';
+import { Priority } from '@helpdesk/shared/interfaces';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';

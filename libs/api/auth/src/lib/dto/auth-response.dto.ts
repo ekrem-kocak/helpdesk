@@ -1,5 +1,5 @@
-import { IAuthResponse } from '@helpdesk/shared/interfaces';
+import { AuthResponse } from '@helpdesk/shared/interfaces';
 
-export class AuthResponseDto implements IAuthResponse {
+export class AuthResponseDto implements AuthResponse {
   accessToken!: string;
 }

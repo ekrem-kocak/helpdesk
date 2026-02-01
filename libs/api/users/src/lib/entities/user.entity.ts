@@ -1,4 +1,4 @@
-import { Role, User } from '@helpdesk/api/data-access-db';
+import { Role, User } from '@helpdesk/shared/interfaces';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 
@@ -29,7 +29,8 @@ export class UserEntity implements User {
   @ApiProperty({ nullable: true })
   deletedAt: Date | null = null;
 
-  constructor(partial: Partial<UserEntity>) {
+  // We use 'any' due to enum conflicts (Prisma vs Shared)
+  constructor(partial: any) {
     Object.assign(this, partial);
   }
 }

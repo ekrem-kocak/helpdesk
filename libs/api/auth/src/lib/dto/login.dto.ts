@@ -1,7 +1,7 @@
-import { ILoginRequest } from '@helpdesk/shared/interfaces';
+import { LoginRequest } from '@helpdesk/shared/interfaces';
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
-export class LoginDto implements ILoginRequest {
+export class LoginDto implements LoginRequest {
   @IsEmail()
   @IsNotEmpty()
   email!: string;

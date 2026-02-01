@@ -1,15 +1,15 @@
-import { Prisma, PrismaService, User } from '@helpdesk/api/data-access-db';
+import { Prisma, PrismaService } from '@helpdesk/api/data-access-db';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findOneById(id: string): Promise<User | null> {
+  async findOneById(id: string) {
     return this.prisma.user.findUnique({ where: { id } });
   }
 
-  async findOneByEmail(email: string): Promise<User | null> {
+  async findOneByEmail(email: string) {
     return this.prisma.user.findUnique({ where: { email } });
   }
 
@@ -19,7 +19,7 @@ export class UsersService {
     cursor?: Prisma.UserWhereUniqueInput;
     where?: Prisma.UserWhereInput;
     orderBy?: Prisma.UserOrderByWithRelationInput;
-  }): Promise<User[]> {
+  }) {
     return this.prisma.user.findMany({
       skip: params.skip,
       take: params.take,
@@ -29,7 +29,7 @@ export class UsersService {
     });
   }
 
-  async create(data: Prisma.UserCreateInput): Promise<User> {
+  async create(data: Prisma.UserCreateInput) {
     return this.prisma.user.create({ data });
   }
 

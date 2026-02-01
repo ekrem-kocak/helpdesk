@@ -1,4 +1,3 @@
-import { DatabaseConfig } from '@helpdesk/shared/config';
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -7,6 +6,7 @@ import {
   autoFilterSoftDeletedExtension,
   softDeleteExtension,
 } from './prisma.extensions';
+import { DatabaseConfig } from '@helpdesk/api/shared';
 
 @Injectable()
 export class PrismaProvider

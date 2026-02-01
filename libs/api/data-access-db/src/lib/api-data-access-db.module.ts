@@ -1,4 +1,4 @@
-import { SharedConfigModule } from '@helpdesk/shared/config';
+import { SharedConfigModule } from '@helpdesk/api/shared';
 import { Module } from '@nestjs/common';
 import { PrismaProvider } from './prisma.provider';
 import { PrismaService } from './prisma.service';

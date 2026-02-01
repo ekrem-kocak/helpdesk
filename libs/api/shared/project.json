@@ -1,10 +1,10 @@
 {
-  "name": "config",
+  "name": "shared",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/shared/config/src",
+  "sourceRoot": "libs/api/shared/src",
   "projectType": "library",
   "tags": [],
-  "// targets": "to see all targets run: nx show project config --web",
+  "// targets": "to see all targets run: nx show project shared --web",
   "targets": {
     "lint": {
       "executor": "@nx/eslint:lint"

@@ -1,5 +1,5 @@
-import { User } from '@helpdesk/api/data-access-db';
 import { UserEntity } from '@helpdesk/api/users';
+import { User } from '@helpdesk/shared/interfaces';
 import {
   Body,
   Controller,

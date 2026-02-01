@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import aiConfig from './config/ai.config';
-import databaseConfig from './config/database.config';
-import jwtConfig from './config/jwt.config';
-import mailConfig from './config/mail.config';
-import redisConfig from './config/redis.config';
-import securityConfig from './config/security.config';
+import aiConfig from './configs/ai.config';
+import databaseConfig from './configs/database.config';
+import jwtConfig from './configs/jwt.config';
+import mailConfig from './configs/mail.config';
+import redisConfig from './configs/redis.config';
+import securityConfig from './configs/security.config';
 import { validate } from './env.validation';
 
 @Module({

@@ -7,7 +7,7 @@ import {
   MinLength,
 } from 'class-validator';
 
-import { Priority } from '@helpdesk/api/data-access-db';
+import { Priority } from '@helpdesk/shared/interfaces';
 
 export class CreateTicketDto {
   @IsString()

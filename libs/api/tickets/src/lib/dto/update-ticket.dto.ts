@@ -1,4 +1,4 @@
-import { Status } from '@helpdesk/api/data-access-db';
+import { Status } from '@helpdesk/shared/interfaces';
 import { PartialType } from '@nestjs/swagger';
 import { IsEnum, IsOptional } from 'class-validator';
 import { CreateTicketDto } from './create-ticket.dto';

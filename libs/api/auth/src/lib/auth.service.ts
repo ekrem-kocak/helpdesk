@@ -1,6 +1,5 @@
-import { User } from '@helpdesk/api/data-access-db';
 import { UsersService } from '@helpdesk/api/users';
-import { IAuthResponse } from '@helpdesk/shared/interfaces';
+import { AuthResponse, User } from '@helpdesk/shared/interfaces';
 import {
   ConflictException,
   Injectable,
@@ -21,7 +20,7 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async register(registerDto: RegisterDto): Promise<IAuthResponse> {
+  async register(registerDto: RegisterDto): Promise<AuthResponse> {
     const existingUser = await this.usersService.findOneByEmail(
       registerDto.email,
     );
@@ -47,7 +46,7 @@ export class AuthService {
     };
   }
 
-  async login(loginDto: LoginDto): Promise<IAuthResponse> {
+  async login(loginDto: LoginDto): Promise<AuthResponse> {
     const user = await this.usersService.findOneByEmail(loginDto.email);
 
     if (!user)
@@ -65,7 +64,9 @@ export class AuthService {
     };
   }
 
-  private generateAccessToken(user: User): Promise<string> {
+  private generateAccessToken(
+    user: Pick<User, 'id' | 'email' | 'name'>,
+  ): Promise<string> {
     return this.jwtService.signAsync({
       sub: user.id,
       email: user.email,

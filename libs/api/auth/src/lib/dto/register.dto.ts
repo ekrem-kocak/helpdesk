@@ -1,7 +1,7 @@
-import { IRegisterRequest } from '@helpdesk/shared/interfaces';
+import { RegisterRequest } from '@helpdesk/shared/interfaces';
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
-export class RegisterDto implements IRegisterRequest {
+export class RegisterDto implements RegisterRequest {
   @IsEmail()
   @IsNotEmpty()
   email!: string;

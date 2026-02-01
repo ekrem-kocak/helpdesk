@@ -32,4 +32,8 @@ export class UsersService {
   async create(data: Prisma.UserCreateInput): Promise<User> {
     return this.prisma.user.create({ data });
   }
+
+  async delete(id: string) {
+    return this.prisma.user.softDelete({ where: { id } });
+  }
 }

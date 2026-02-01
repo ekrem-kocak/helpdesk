@@ -26,6 +26,9 @@ export class UserEntity implements User {
   @ApiProperty({ enum: Role })
   role!: Role;
 
+  @ApiProperty({ nullable: true })
+  deletedAt: Date | null = null;
+
   constructor(partial: Partial<UserEntity>) {
     Object.assign(this, partial);
   }

@@ -3,7 +3,10 @@ import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../../generated/prisma/client';
-import { softDeleteExtension } from './prisma.extensions';
+import {
+  autoFilterSoftDeletedExtension,
+  softDeleteExtension,
+} from './prisma.extensions';
 
 @Injectable()
 export class PrismaProvider
@@ -37,6 +40,8 @@ export class PrismaProvider
   }
 
   withExtensions() {
-    return this.$extends(softDeleteExtension);
+    return this.$extends(softDeleteExtension).$extends(
+      autoFilterSoftDeletedExtension,
+    );
   }
 }

@@ -3,6 +3,7 @@
  * This is only a minimal backend to get started.
  */
 
+import { TransformInterceptor } from '@helpdesk/api/shared';
 import {
   ClassSerializerInterceptor,
   Logger,
@@ -27,7 +28,10 @@ async function bootstrap() {
     }),
   );
 
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+  app.useGlobalInterceptors(
+    new TransformInterceptor(),
+    new ClassSerializerInterceptor(app.get(Reflector)),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('NestJS API')

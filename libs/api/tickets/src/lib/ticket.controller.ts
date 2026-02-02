@@ -1,6 +1,6 @@
 import { CurrentUser, JwtAuthGuard } from '@helpdesk/api/auth';
+import { PageDto, PageOptionsDto } from '@helpdesk/api/shared';
 import { UserEntity } from '@helpdesk/api/users';
-import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import {
   Body,
   Controller,
@@ -9,8 +9,8 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateTicketDto } from './dto/create-ticket.dto';
@@ -35,14 +35,20 @@ export class TicketController {
     return new TicketEntity(ticket);
   }
 
-  @UseInterceptors(CacheInterceptor)
-  @CacheKey('all-tickets')
-  @CacheTTL(30000)
+  // @UseInterceptors(CacheInterceptor)
+  // @CacheKey('all-tickets')
+  // @CacheTTL(30000)
   @Get()
-  @ApiOperation({ summary: 'Get all tickets' })
-  async findAll(): Promise<TicketEntity[]> {
-    const tickets = await this.ticketService.findAll();
-    return tickets.map((ticket) => new TicketEntity(ticket));
+  @ApiOperation({ summary: 'Get all tickets (Paginated)' })
+  async findAll(
+    @Query() pageOptionsDto: PageOptionsDto,
+  ): Promise<PageDto<TicketEntity>> {
+    const tickets = await this.ticketService.findAll(pageOptionsDto);
+
+    return new PageDto(
+      tickets.data.map((ticket) => new TicketEntity(ticket)),
+      tickets.meta,
+    );
   }
 
   @Get('my-tickets')

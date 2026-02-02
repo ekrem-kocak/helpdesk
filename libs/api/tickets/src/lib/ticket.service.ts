@@ -1,6 +1,7 @@
 import { AiService } from '@helpdesk/api/ai';
-import { PrismaService } from '@helpdesk/api/data-access-db';
+import { PrismaService, Ticket } from '@helpdesk/api/data-access-db';
 import { QueueService } from '@helpdesk/api/queue';
+import { PageDto, PageMetaDto, PageOptionsDto } from '@helpdesk/api/shared';
 import { Priority } from '@helpdesk/shared/interfaces';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
@@ -46,12 +47,24 @@ export class TicketService {
     return ticket;
   }
 
-  async findAll() {
-    return this.prisma.ticket.findMany({
-      include: {
-        user: true,
-      },
-    });
+  async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<Ticket>> {
+    const [data, itemCount] = await this.prisma.$transaction([
+      this.prisma.ticket.findMany({
+        skip: pageOptionsDto.skip,
+        take: pageOptionsDto.take,
+        orderBy: {
+          createdAt: pageOptionsDto.order,
+        },
+        include: {
+          user: true,
+        },
+      }),
+      this.prisma.ticket.count(),
+    ]);
+
+    const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
+
+    return new PageDto(data, pageMetaDto);
   }
 
   async findAllByUserId(userId: string) {

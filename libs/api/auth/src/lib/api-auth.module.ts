@@ -8,6 +8,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { SharedConfigModule } from '@helpdesk/api/shared';
+import { RtStrategy } from './strategies/rt.strategy';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { SharedConfigModule } from '@helpdesk/api/shared';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, RtStrategy],
   exports: [AuthService],
 })
 export class ApiAuthModule {}

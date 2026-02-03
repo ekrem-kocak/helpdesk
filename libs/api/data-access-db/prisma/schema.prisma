@@ -26,6 +26,8 @@ model User {
   updatedAt DateTime @updatedAt
 
   deletedAt DateTime?
+
+  refreshTokens RefreshToken[]
 }
 
 // Support Tickets
@@ -64,4 +66,23 @@ enum Priority {
   MEDIUM
   HIGH
   URGENT
+}
+
+model RefreshToken {
+  id    String @id @default(uuid())
+  token String @unique // Token'ın hashlenmiş hali (Güvenlik için)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade) // User silinirse tokenlar da silinsin
+
+  expiresAt DateTime // Token ne zaman geçersiz olacak?
+  isRevoked Boolean  @default(false) // Admin veya kullanıcı bu oturumu kapattı mı?
+
+  // 🛡️ Güvenlik & Audit Alanları
+  replacedByToken String? // Token Rotation takibi için (Zincirleme güvenlik)
+  userAgent       String? // Hangi tarayıcı/cihaz? (Chrome on Windows vb.)
+  ipAddress       String? // Hangi IP? (192.168.1.1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

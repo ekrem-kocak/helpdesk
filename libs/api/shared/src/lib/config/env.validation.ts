@@ -19,6 +19,14 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   JWT_EXPIRES_IN!: string;
 
+  @IsString()
+  @IsNotEmpty()
+  REFRESH_TOKEN_SECRET!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  REFRESH_TOKEN_EXPIRES_IN!: string;
+
   @IsNumber()
   @IsNotEmpty()
   BCRYPT_SALT_ROUNDS!: number;

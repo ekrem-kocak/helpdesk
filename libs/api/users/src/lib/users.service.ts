@@ -1,4 +1,5 @@
-import { Prisma, PrismaService } from '@helpdesk/api/data-access-db';
+import { Prisma, PrismaService, User } from '@helpdesk/api/data-access-db';
+import { PageDto, PageMetaDto, PageOptionsDto } from '@helpdesk/api/shared';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -13,20 +14,18 @@ export class UsersService {
     return this.prisma.user.findUnique({ where: { email } });
   }
 
-  async findAll(params: {
-    skip?: number;
-    take?: number;
-    cursor?: Prisma.UserWhereUniqueInput;
-    where?: Prisma.UserWhereInput;
-    orderBy?: Prisma.UserOrderByWithRelationInput;
-  }) {
-    return this.prisma.user.findMany({
-      skip: params.skip,
-      take: params.take,
-      cursor: params.cursor,
-      where: params.where,
-      orderBy: params.orderBy,
-    });
+  async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<User>> {
+    const [data, itemCount] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        skip: pageOptionsDto.skip,
+        take: pageOptionsDto.take,
+        orderBy: { createdAt: pageOptionsDto.order },
+      }),
+      this.prisma.user.count(),
+    ]);
+    const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
+
+    return new PageDto(data, pageMetaDto);
   }
 
   async create(data: Prisma.UserCreateInput) {

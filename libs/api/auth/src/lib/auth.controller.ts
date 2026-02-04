@@ -19,12 +19,12 @@ import {
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
-import { CurrentUser } from './decorators/current-user.decorator';
+import { CurrentUser } from '@helpdesk/api/shared';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { RtGuard } from './guards/rt.guard';
+import { JwtAuthGuard } from '@helpdesk/api/shared';
+import { RtGuard } from '@helpdesk/api/shared';
 import {
   clearRefreshTokenCookie,
   setRefreshTokenCookie,

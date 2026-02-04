@@ -1,4 +1,4 @@
-import { CurrentUser, JwtAuthGuard } from '@helpdesk/api/auth';
+import { CurrentUser, JwtAuthGuard } from '@helpdesk/api/shared';
 import { PageDto, PageOptionsDto } from '@helpdesk/api/shared';
 import { UserEntity } from '@helpdesk/api/users';
 import {

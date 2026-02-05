@@ -1,5 +1,6 @@
 import { ApiAuthModule } from '@helpdesk/api/auth';
 import { ApiTicketsModule } from '@helpdesk/api/tickets';
+import { ApiUsersModule } from '@helpdesk/api/users';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -7,6 +8,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 @Module({
   imports: [
     ApiAuthModule,
+    ApiUsersModule,
     ApiTicketsModule,
 
     ThrottlerModule.forRoot({

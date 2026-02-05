@@ -1,4 +1,8 @@
-import { CurrentUser, JwtAuthGuard } from '@helpdesk/api/auth';
+import {
+  ApiPaginatedResponse,
+  CurrentUser,
+  JwtAuthGuard,
+} from '@helpdesk/api/shared';
 import { PageDto, PageOptionsDto } from '@helpdesk/api/shared';
 import { UserEntity } from '@helpdesk/api/users';
 import {
@@ -39,6 +43,7 @@ export class TicketController {
   // @CacheKey('all-tickets')
   // @CacheTTL(30000)
   @Get()
+  @ApiPaginatedResponse(TicketEntity, 'Paginated list of tickets')
   @ApiOperation({ summary: 'Get all tickets (Paginated)' })
   async findAll(
     @Query() pageOptionsDto: PageOptionsDto,

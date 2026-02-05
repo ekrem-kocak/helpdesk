@@ -22,6 +22,7 @@
     "prisma:migrate:deploy": "cd libs/api/data-access-db && prisma migrate deploy",
     "prisma:studio": "cd libs/api/data-access-db && prisma studio",
     "prisma:db:push": "cd libs/api/data-access-db && prisma db push",
+    "prisma:seed": "cd libs/api/data-access-db && prisma db seed",
     "graph": "nx graph",
     "reset": "nx reset",
     "prepare": "husky"
@@ -114,6 +115,7 @@
     "ts-jest": "^29.4.0",
     "ts-node": "10.9.1",
     "tslib": "^2.3.0",
+    "tsx": "^4.21.0",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.40.0",
     "vitest": "^4.0.8",

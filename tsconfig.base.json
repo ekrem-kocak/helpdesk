@@ -25,7 +25,8 @@
       "@helpdesk/api/ai": ["libs/api/ai/src/index.ts"],
       "@helpdesk/api/shared": ["libs/api/shared/src/index.ts"],
       "@helpdesk/shared/interfaces": ["libs/shared/interfaces/src/index.ts"],
-      "@helpdesk/shared/config": ["libs/shared/config/src/index.ts"]
+      "@helpdesk/shared/config": ["libs/shared/config/src/index.ts"],
+      "@helpdesk/ui": ["libs/shared/ui/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

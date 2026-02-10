@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@/*": ["./*"],
       "@helpdesk/api/data-access-db": ["libs/api/data-access-db/src/index.ts"],
       "@helpdesk/api/auth": ["libs/api/auth/src/index.ts"],
       "@helpdesk/api/users": ["libs/api/users/src/index.ts"],
@@ -26,7 +27,7 @@
       "@helpdesk/api/shared": ["libs/api/shared/src/index.ts"],
       "@helpdesk/shared/interfaces": ["libs/shared/interfaces/src/index.ts"],
       "@helpdesk/shared/config": ["libs/shared/config/src/index.ts"],
-      "@helpdesk/ui": ["libs/shared/ui/src/index.ts"]
+      "@helpdesk/shared/ui": ["libs/shared/ui/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

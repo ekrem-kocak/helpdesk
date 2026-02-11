@@ -1,209 +1,137 @@
-# Helpdesk System
+# 🎫 Helpdesk System
 
-Modern, scalable, and AI-powered helpdesk management system.
+Full-stack helpdesk management system with AI-powered ticket responses, built using modern technologies and best practices.
 
-## Features
+## 🌐 Live Demo
 
-- 🎫 **Ticket Management** - Comprehensive ticket creation, updating, and tracking system
-- 🔐 **JWT Authentication** - Secure user authentication
-- 🤖 **AI Integration** - Automated response suggestions with Google Gemini
-- 📧 **Email Notifications** - Asynchronous email delivery
-- ⚡ **Cache Management** - Performance optimization with Redis
-- 🔄 **Queue Management** - Background job processing with BullMQ
-- 🛡️ **Rate Limiting** - API security and abuse prevention
-- 📊 **Swagger API Documentation** - Automatic API reference
+**Frontend:** [helpdesk-xi-pied.vercel.app](https://helpdesk-xi-pied.vercel.app)  
+**API Documentation:** [helpdesk-api-beta.vercel.app/api](https://helpdesk-api-beta.vercel.app/api)
 
-## Tech Stack
+## ✨ Features
 
-### Backend
+- 🎫 Ticket management with full CRUD operations
+- 🔐 JWT authentication with HTTP-only cookies & refresh tokens
+- 🤖 AI-powered response suggestions (Google Gemini)
+- 📧 Asynchronous email notifications
+- ⚡ Redis caching for performance optimization
+- 🔄 Background job processing with BullMQ
+- 🎨 Modern, responsive UI with shadcn/ui
+- 📊 Auto-generated API documentation (Swagger)
 
-- **Framework:** NestJS
-- **Database:** PostgreSQL + Prisma ORM
-- **Cache:** Redis
-- **Queue:** BullMQ
-- **Authentication:** JWT + Passport
-- **AI:** Google Gemini API
-- **Email:** Nodemailer
+## 🛠️ Tech Stack
 
-### Frontend
+**Backend:** NestJS • PostgreSQL • Prisma • Redis • BullMQ • JWT  
+**Frontend:** Next.js 16 • React 19 • TypeScript • Tailwind CSS 4 • shadcn/ui  
+**State Management:** TanStack Query • React Hook Form • Zod  
+**DevOps:** Nx Monorepo • pnpm • Docker • ESLint • Prettier
 
-- **Framework:** Angular 21
-- **Build Tool:** Nx
+## 🚀 Quick Start
 
-### DevOps
+### Prerequisites
 
-- **Monorepo:** Nx Workspace
-- **Package Manager:** pnpm
-- **Code Quality:** ESLint + Prettier + Husky
+Node.js 18+ • pnpm 8+ • PostgreSQL 14+ • Redis 6+ • Docker (optional)
 
-## Prerequisites
-
-- Node.js >= 18
-- pnpm >= 8
-- PostgreSQL >= 14
-- Redis >= 6
-- Docker (optional)
-
-## Installation
-
-1. Clone the repository:
+### Installation
 
 ```bash
+# Clone and install
 git clone <repository-url>
 cd helpdesk
-```
-
-2. Install dependencies:
-
-```bash
 pnpm install
-```
 
-3. Configure environment variables:
-
-```bash
+# Setup environment variables (create .env file)
 cp .env.example .env
-# Update .env file with your own values
-```
 
-4. Start PostgreSQL and Redis with Docker:
-
-```bash
+# Start services with Docker
 docker-compose up -d
-```
 
-5. Run database migrations:
-
-```bash
-pnpm prisma:migrate:dev
-```
-
-6. Generate Prisma Client:
-
-```bash
+# Setup database
 pnpm prisma:generate
-```
-
-## Development
-
-### Start all applications
-
-```bash
-pnpm start
-```
-
-### Start API only
-
-```bash
-pnpm start:api
-```
-
-API runs on `http://localhost:3000` by default.
-Swagger documentation: `http://localhost:3000/api`
-
-### Start Frontend only
-
-```bash
-pnpm start:client
-```
-
-Frontend runs on `http://localhost:4200` by default.
-
-### Database Management
-
-```bash
-# View database with Prisma Studio
-pnpm prisma:studio
-
-# Create new migration
 pnpm prisma:migrate:dev
 
-# Apply migrations in production
-pnpm prisma:migrate:deploy
+# Start applications
+pnpm start:api      # API on http://localhost:3001
+pnpm start:client   # Client on http://localhost:3000
 ```
 
-## Build
+**📚 API Documentation:** http://localhost:3001/api
 
-### Build all applications
+## 💻 Development
+
+### Main Commands
 
 ```bash
-pnpm build:all
+# Development
+pnpm start:api              # Start API (port 3001)
+pnpm start:client           # Start Client (port 3000)
+
+# Build
+pnpm build:all              # Build all apps
+pnpm build:api              # Build API only
+pnpm build:client           # Build client only
+
+# Database
+pnpm prisma:studio          # Open Prisma Studio
+pnpm prisma:migrate:dev     # Create migration
+
+# Code Quality
+pnpm test:all               # Run all tests
+pnpm lint:all               # Lint all projects
+pnpm lint:all:fix           # Auto-fix linting
+pnpm format                 # Format with Prettier
+
+# Nx
+pnpm graph                  # View dependency graph
+nx reset                    # Clear Nx cache
 ```
 
-### Build API only
-
-```bash
-pnpm build:api
-```
-
-### Build Client only
-
-```bash
-pnpm build:client
-```
-
-## Testing and Linting
-
-```bash
-# Run all tests
-pnpm test:all
-
-# Test only affected code
-pnpm test:affected
-
-# Run lint checks
-pnpm lint:all
-
-# Auto-fix lint errors
-pnpm lint:all:fix
-
-# Format code
-pnpm format
-```
-
-## Project Structure
+## 📁 Project Structure
 
 ```
 helpdesk/
 ├── apps/
-│   ├── api/              # NestJS backend application
-│   └── client/           # Angular frontend application
+│   ├── api/                    # NestJS Backend
+│   └── client/                 # Next.js Frontend
+│
 ├── libs/
 │   ├── api/
-│   │   ├── auth/         # Authentication module
-│   │   ├── tickets/      # Ticket management
-│   │   ├── users/        # User management
-│   │   ├── ai/           # AI integration
-│   │   ├── mail/         # Email service
-│   │   ├── queue/        # Queue management
-│   │   ├── cache/        # Cache management
-│   │   └── data-access-db/ # Prisma + Database
+│   │   ├── auth/               # Authentication & JWT
+│   │   ├── tickets/            # Ticket management
+│   │   ├── users/              # User management
+│   │   ├── ai/                 # AI integration
+│   │   ├── mail/               # Email service
+│   │   ├── queue/              # Background jobs
+│   │   ├── cache/              # Redis caching
+│   │   └── data-access-db/     # Prisma ORM
+│   │
 │   └── shared/
-│       ├── config/       # Shared configuration
-│       └── interfaces/   # Shared types
-└── docker-compose.yml    # PostgreSQL + Redis
+│       ├── ui/                 # Shared UI components
+│       └── interfaces/         # Shared types
+│
+└── docker-compose.yml          # PostgreSQL + Redis
 ```
 
-## API Endpoints
+## 🔌 API Endpoints
 
-API documentation is available at `http://localhost:3000/api`.
+Full documentation: **http://localhost:3001/api** (Swagger UI)
 
-### Main Endpoints
+**Authentication:** `/api/auth/register` • `/api/auth/login` • `/api/auth/logout`  
+**Tickets:** `/api/tickets` (CRUD operations)  
+**Users:** `/api/users` (Admin only)  
+**AI:** `/api/ai/suggest-response` (AI-powered responses)
 
-- `POST /auth/register` - User registration
-- `POST /auth/login` - User login
-- `GET /tickets` - List tickets
-- `POST /tickets` - Create new ticket
-- `GET /tickets/:id` - Get ticket details
-- `PATCH /tickets/:id` - Update ticket
+## 🏗️ Architecture
 
-## Contributing
+**Backend (NestJS):** Modular architecture with dependency injection, Prisma for data access, JWT authentication, Redis caching, and BullMQ for background jobs.
 
-1. Create a feature branch (`git checkout -b feature/amazing-feature`)
-2. Commit your changes (`git commit -m 'feat: Add amazing feature'`)
-3. Push to the branch (`git push origin feature/amazing-feature`)
-4. Open a Pull Request
+**Frontend (Next.js):** App Router with Server Components for data fetching, Client Components for interactivity, TanStack Query for server state management.
 
-## License
+**Monorepo (Nx):** Code sharing between apps, incremental builds, affected project detection, and centralized dependency management.
 
-MIT
+## 📝 License
+
+MIT License - feel free to use this project for learning and portfolio purposes.
+
+---
+
+**Built with modern web technologies for learning and showcasing full-stack development skills.**

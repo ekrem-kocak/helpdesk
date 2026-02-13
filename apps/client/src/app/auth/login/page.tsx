@@ -23,8 +23,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@helpdesk/shared/ui';
-import { useAuthStore } from '../../store/auth.store';
-import { apiClient } from '../../api-client';
+import { useAuthStore } from '../../../store/auth.store';
+import { apiClient } from '../../../lib/api-client';
 import { ApiResponse, AuthResponse } from '@/libs/shared/interfaces/src';
 
 const loginSchema = z.object({

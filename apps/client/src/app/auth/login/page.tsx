@@ -23,6 +23,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@helpdesk/shared/ui';
+import { useAuthStore } from '../../store/auth.store';
+import { apiClient } from '../../api-client';
+import { ApiResponse, AuthResponse } from '@/libs/shared/interfaces/src';
 
 const loginSchema = z.object({
   email: z.email('Invalid email'),
@@ -34,6 +37,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const [globalError, setGlobalError] = useState<string | null>(null);
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -45,19 +49,11 @@ export default function LoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginFormValues) => {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Login failed');
-      }
-      return res.json();
+      const res = await apiClient.post('/auth/login', data);
+      return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (data: ApiResponse<AuthResponse>) => {
+      setAccessToken(data.data.accessToken);
       router.push('/dashboard');
       router.refresh();
     },

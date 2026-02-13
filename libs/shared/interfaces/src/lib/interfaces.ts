@@ -22,6 +22,11 @@ export enum Priority {
   URGENT = 'URGENT',
 }
 
+export enum SortOrder {
+  ASC = 'asc',
+  DESC = 'desc',
+}
+
 // ============================================
 // BASE TYPES
 // ============================================
@@ -32,6 +37,42 @@ export interface BaseEntity {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
+}
+
+// ============================================
+// API RESPONSE TYPES
+// ============================================
+
+/** Standard API response wrapper for the backend */
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  timestamp: string;
+}
+
+/** Response structure for paginated API endpoints */
+export interface ApiPaginatedResponse<T> {
+  success: boolean;
+  data: T[];
+  meta: PageMeta;
+  timestamp: string;
+}
+
+/** Paging meta information - pure interface equivalent of PageMetaDto */
+export interface PageMeta {
+  page: number;
+  take: number;
+  itemCount: number;
+  pageCount: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
+
+/** Paging query parameters - pure interface equivalent of PageOptionsDto */
+export interface PageOptions {
+  order?: SortOrder;
+  page?: number;
+  take?: number;
 }
 
 // ============================================
@@ -59,6 +100,7 @@ export interface Ticket extends BaseEntity {
 // ============================================
 // AUTH INTERFACES
 // ============================================
+
 export interface AuthResponse {
   accessToken: string;
 }
@@ -72,6 +114,33 @@ export interface RegisterRequest {
   email: string;
   password: string;
   name?: string;
+}
+
+/** JWT token payload - structure created by backend and decoded by frontend */
+export interface JwtPayload {
+  sub: string;
+  email: string;
+  role: Role;
+  jti?: string;
+  exp?: number;
+  iat?: number;
+}
+
+// ============================================
+// INPUT TYPES (Create/Update operations)
+// ============================================
+
+export interface CreateTicketInput {
+  title: string;
+  description: string;
+  priority?: Priority;
+}
+
+export interface UpdateTicketInput {
+  title?: string;
+  description?: string;
+  priority?: Priority;
+  status?: Status;
 }
 
 // ============================================

@@ -1,20 +1,17 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { SortOrder } from '@helpdesk/shared/interfaces';
+import type { PageOptions } from '@helpdesk/shared/interfaces';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
 
-export enum Order {
-  ASC = 'asc',
-  DESC = 'desc',
-}
-
-export class PageOptionsDto {
+export class PageOptionsDto implements PageOptions {
   @ApiPropertyOptional({
-    enum: Order,
-    default: Order.DESC,
+    enum: SortOrder,
+    default: SortOrder.DESC,
   })
-  @IsEnum(Order)
+  @IsEnum(SortOrder)
   @IsOptional()
-  readonly order: Order | undefined = Order.DESC;
+  readonly order: SortOrder | undefined = SortOrder.DESC;
 
   @ApiPropertyOptional({
     minimum: 1,

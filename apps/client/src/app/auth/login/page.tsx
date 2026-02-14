@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useMutation } from '@tanstack/react-query';
+import axios from 'axios';
 import { Loader2 } from 'lucide-react';
 
 import {
@@ -23,8 +24,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@helpdesk/shared/ui';
-import { useAuthStore } from '../../store/auth.store';
-import { apiClient } from '../../api-client';
+import { useAuthStore } from '../../../store/auth.store';
+import { apiClient } from '../../../lib/api-client';
 import { ApiResponse, AuthResponse } from '@/libs/shared/interfaces/src';
 
 const loginSchema = z.object({
@@ -57,8 +58,14 @@ export default function LoginPage() {
       router.push('/dashboard');
       router.refresh();
     },
-    onError: (error: Error) => {
-      setGlobalError(error.message);
+    onError: (error: unknown) => {
+      if (axios.isAxiosError(error)) {
+        const message =
+          error.response?.data?.message || 'An unexpected error occurred';
+        setGlobalError(message);
+      } else {
+        setGlobalError('An unexpected error occurred');
+      }
     },
   });
 
@@ -78,7 +85,7 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           {globalError && (
-            <div className="mb-4 rounded-md bg-destructive/15 p-3 text-sm text-destructive">
+            <div className="bg-destructive/15 text-destructive mb-4 rounded-md p-3 text-sm">
               {globalError}
             </div>
           )}
@@ -124,7 +131,7 @@ export default function LoginPage() {
               >
                 Login
                 {loginMutation.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin inline-block align-middle" />
+                  <Loader2 className="mr-2 inline-block h-4 w-4 animate-spin align-middle" />
                 )}
               </Button>
             </form>

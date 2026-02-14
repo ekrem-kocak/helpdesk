@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { ApiResponse, AuthResponse } from '@helpdesk/shared/interfaces';
-import { useAuthStore } from './store/auth.store';
+import { useAuthStore } from '../store/auth.store';
 
 // ============================================
 // AXIOS INSTANCE
@@ -34,12 +34,23 @@ apiClient.interceptors.request.use(
 // RESPONSE INTERCEPTOR (401 Capture and Refresh)
 // ============================================
 
+// Auth endpoints that should NOT trigger token refresh
+const AUTH_ROUTES = ['/auth/login', '/auth/register', '/auth/refresh'];
+
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const requestUrl = originalRequest?.url || '';
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Skip refresh logic for auth endpoints
+    const isAuthRoute = AUTH_ROUTES.some((route) => requestUrl.includes(route));
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !isAuthRoute
+    ) {
       originalRequest._retry = true;
 
       try {

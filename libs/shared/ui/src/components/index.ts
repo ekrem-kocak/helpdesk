@@ -1,4 +1,5 @@
 export * from './ui/button';
+export * from './ui/badge';
 export * from './ui/input';
 export * from './ui/form';
 export * from './ui/label';
@@ -7,3 +8,4 @@ export * from './ui/dropdown-menu';
 export * from './ui/avatar';
 export * from './ui/separator';
 export * from './ui/tooltip';
+export * from './ui/table';

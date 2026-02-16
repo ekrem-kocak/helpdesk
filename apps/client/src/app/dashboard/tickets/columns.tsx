@@ -2,9 +2,9 @@
 
 import { createColumnHelper } from '@tanstack/react-table';
 import {
-  Ticket,
-  Status as TicketStatus,
-  Priority as TicketPriority,
+  type Ticket,
+  type Status as TicketStatus,
+  type Priority as TicketPriority,
   Role,
 } from '@helpdesk/shared/interfaces';
 import {
@@ -23,27 +23,29 @@ import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
 // STATUS & PRIORITY CONFIG (exported for use in UserTicketsView)
 // ============================================
 
-const statusConfig: Record<TicketStatus, { label: string; className: string }> =
-  {
-    OPEN: {
-      label: 'Open',
-      className: 'bg-blue-100 text-blue-800 border-blue-200',
-    },
-    IN_PROGRESS: {
-      label: 'In Progress',
-      className: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    },
-    RESOLVED: {
-      label: 'Resolved',
-      className: 'bg-green-100 text-green-800 border-green-200',
-    },
-    CLOSED: {
-      label: 'Closed',
-      className: 'bg-gray-100 text-gray-800 border-gray-200',
-    },
-  };
+export const statusConfig: Record<
+  TicketStatus,
+  { label: string; className: string }
+> = {
+  OPEN: {
+    label: 'Open',
+    className: 'bg-blue-100 text-blue-800 border-blue-200',
+  },
+  IN_PROGRESS: {
+    label: 'In Progress',
+    className: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  },
+  RESOLVED: {
+    label: 'Resolved',
+    className: 'bg-green-100 text-green-800 border-green-200',
+  },
+  CLOSED: {
+    label: 'Closed',
+    className: 'bg-gray-100 text-gray-800 border-gray-200',
+  },
+};
 
-const priorityConfig: Record<
+export const priorityConfig: Record<
   TicketPriority,
   { label: string; className: string }
 > = {

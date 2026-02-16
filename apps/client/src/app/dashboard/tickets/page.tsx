@@ -1,18 +1,21 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
 import {
-  type ApiPaginatedResponse,
-  type Ticket,
+  Role,
+  ApiPaginatedResponse,
+  Ticket,
 } from '@helpdesk/shared/interfaces';
-import { apiClient } from '../../../lib/api-client';
-import { DataTable } from '../../../components/data-table';
+import { useQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
-import { getColumns } from './columns';
+import { DataTable } from '../../../components/data-table';
+import { apiClient } from '../../../lib/api-client';
 import { useAuthStore } from '../../../store/auth.store';
+import { getColumns } from './columns';
+import { UserTicketsView } from './user-tickets-view';
 
 export default function TicketsPage() {
   const user = useAuthStore((state) => state.user);
+  const isUserRole = user?.role === Role.USER;
 
   const {
     data: tickets = [],
@@ -43,6 +46,17 @@ export default function TicketsPage() {
         {error instanceof Error && (
           <p className="mt-1 text-sm opacity-70">{error.message}</p>
         )}
+      </div>
+    );
+  }
+
+  if (isUserRole) {
+    return (
+      <div className="space-y-6">
+        <UserTicketsView
+          tickets={tickets}
+          searchPlaceholder="Search tickets..."
+        />
       </div>
     );
   }

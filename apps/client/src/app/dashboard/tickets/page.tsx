@@ -1,13 +1,19 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import type { ApiPaginatedResponse, Ticket } from '@helpdesk/shared/interfaces';
+import {
+  type ApiPaginatedResponse,
+  type Ticket,
+} from '@helpdesk/shared/interfaces';
 import { apiClient } from '../../../lib/api-client';
-import { columns } from './columns';
 import { DataTable } from '../../../components/data-table';
 import { Loader2 } from 'lucide-react';
+import { getColumns } from './columns';
+import { useAuthStore } from '../../../store/auth.store';
 
 export default function TicketsPage() {
+  const user = useAuthStore((state) => state.user);
+
   const {
     data: tickets = [],
     isLoading,
@@ -44,7 +50,7 @@ export default function TicketsPage() {
   return (
     <div className="space-y-6">
       <DataTable
-        columns={columns}
+        columns={getColumns(user?.role)}
         data={tickets}
         searchKey="title"
         searchPlaceholder="Search by title..."

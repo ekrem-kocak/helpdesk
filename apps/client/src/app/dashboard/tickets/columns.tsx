@@ -1,10 +1,11 @@
 'use client';
 
 import { createColumnHelper } from '@tanstack/react-table';
-import type {
+import {
   Ticket,
   Status as TicketStatus,
   Priority as TicketPriority,
+  Role,
 } from '@helpdesk/shared/interfaces';
 import {
   Badge,
@@ -19,7 +20,7 @@ import {
 import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
 
 // ============================================
-// STATUS & PRIORITY CONFIG
+// STATUS & PRIORITY CONFIG (exported for use in UserTicketsView)
 // ============================================
 
 const statusConfig: Record<TicketStatus, { label: string; className: string }> =
@@ -85,7 +86,7 @@ function SortableHeader({
 
 const columnHelper = createColumnHelper<Ticket>();
 
-export const columns = [
+export const getColumns = (userRole: Role | undefined) => [
   columnHelper.accessor('id', {
     header: 'ID',
     cell: (info) => (
@@ -146,6 +147,10 @@ export const columns = [
     header: () => <span className="sr-only">Actions</span>,
     cell: ({ row }) => {
       const ticket = row.original;
+
+      if (userRole === Role.USER) {
+        return null;
+      }
 
       return (
         <DropdownMenu>

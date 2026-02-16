@@ -2,6 +2,7 @@ import {
   ApiPaginatedResponse,
   CurrentUser,
   JwtAuthGuard,
+  Roles,
 } from '@helpdesk/api/shared';
 import { PageDto, PageOptionsDto } from '@helpdesk/api/shared';
 import { UserEntity } from '@helpdesk/api/users';
@@ -21,6 +22,7 @@ import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { TicketEntity } from './entities/ticket.entity';
 import { TicketService } from './ticket.service';
+import { Role } from '@helpdesk/shared/interfaces';
 
 @ApiTags('Tickets')
 @ApiBearerAuth('JWT-auth')
@@ -46,9 +48,10 @@ export class TicketController {
   @ApiPaginatedResponse(TicketEntity, 'Paginated list of tickets')
   @ApiOperation({ summary: 'Get all tickets (Paginated)' })
   async findAll(
+    @CurrentUser() user: UserEntity,
     @Query() pageOptionsDto: PageOptionsDto,
   ): Promise<PageDto<TicketEntity>> {
-    const tickets = await this.ticketService.findAll(pageOptionsDto);
+    const tickets = await this.ticketService.findAll(pageOptionsDto, user);
 
     return new PageDto(
       tickets.data.map((ticket) => new TicketEntity(ticket)),

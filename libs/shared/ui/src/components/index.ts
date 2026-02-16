@@ -9,3 +9,5 @@ export * from './ui/avatar';
 export * from './ui/separator';
 export * from './ui/tooltip';
 export * from './ui/table';
+export * from './ui/textarea';
+export * from './ui/dialog';

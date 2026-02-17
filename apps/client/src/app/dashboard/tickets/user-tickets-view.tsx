@@ -9,8 +9,8 @@ import {
   Badge,
   Input,
 } from '@helpdesk/shared/ui';
-import { formatDate } from '../../../lib/format';
-import { statusConfig, priorityConfig } from '../../../lib/tickets';
+import { formatDate } from '@client/lib/format';
+import { statusConfig, priorityConfig } from '@client/lib/tickets';
 import { TicketIcon, Calendar, Search, Inbox } from 'lucide-react';
 
 interface UserTicketsViewProps {

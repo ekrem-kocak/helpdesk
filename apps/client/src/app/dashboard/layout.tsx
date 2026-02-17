@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import AuthGuard from '../../components/auth.guard';
-import { ThemeToggle } from '../../components/theme-toggle';
-import { useAuthStore } from '../../store/auth.store';
+import AuthGuard from '@client/components/auth.guard';
+import { ThemeToggle } from '@client/components/theme-toggle';
+import { useAuthStore } from '@client/store/auth.store';
 import {
   LayoutDashboard,
   LogOut,

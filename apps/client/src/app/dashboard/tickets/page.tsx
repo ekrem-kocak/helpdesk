@@ -1,13 +1,13 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
-import { DataTable } from '../../../components/data-table';
-import { useAuthStore } from '../../../store/auth.store';
-import { isUserRole } from '../../../lib/auth';
-import { CreateTicketDialog } from './create-ticket-dialog';
-import { UserTicketsView } from './user-tickets-view';
-import { getColumns } from './columns';
-import { useTickets } from '../../../hooks/use-tickets';
+import { DataTable } from '@client/components/data-table';
+import { useAuthStore } from '@client/store/auth.store';
+import { isUserRole } from '@client/lib/auth';
+import { CreateTicketDialog } from '@client/app/dashboard/tickets/create-ticket-dialog';
+import { UserTicketsView } from '@client/app/dashboard/tickets/user-tickets-view';
+import { getColumns } from '@client/app/dashboard/tickets/columns';
+import { useTickets } from '@client/hooks/use-tickets';
 
 export default function TicketsPage() {
   const user = useAuthStore((state) => state.user);

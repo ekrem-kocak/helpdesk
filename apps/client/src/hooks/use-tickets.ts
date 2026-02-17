@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import type { ApiPaginatedResponse, Ticket } from '@helpdesk/shared/interfaces';
-import { apiClient } from '../lib/api-client';
+import { apiClient } from '@client/lib/api-client';
 
 interface UseTicketsOptions {
   /**

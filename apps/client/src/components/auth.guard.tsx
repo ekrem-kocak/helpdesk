@@ -1,5 +1,5 @@
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '../store/auth.store';
+import { useAuthStore } from '@client/store/auth.store';
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 

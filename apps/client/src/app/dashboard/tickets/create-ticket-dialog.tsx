@@ -31,9 +31,9 @@ import {
   Textarea,
 } from '@helpdesk/shared/ui';
 import { Loader2, PlusCircle } from 'lucide-react';
-import { apiClient } from '../../../lib/api-client';
-import { useAuthStore } from '../../../store/auth.store';
-import { isUserRole } from '../../../lib/auth';
+import { apiClient } from '@client/lib/api-client';
+import { useAuthStore } from '@client/store/auth.store';
+import { isUserRole } from '@client/lib/auth';
 
 const createTicketSchema = z.object({
   title: z

@@ -13,9 +13,9 @@ import {
   DropdownMenuTrigger,
 } from '@helpdesk/shared/ui';
 import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
-import { canManageTicketActions, type UserWithRole } from '../../../lib/auth';
-import { formatDate } from '../../../lib/format';
-import { priorityConfig, statusConfig } from '../../../lib/tickets';
+import { canManageTicketActions, type UserWithRole } from '@client/lib/auth';
+import { formatDate } from '@client/lib/format';
+import { priorityConfig, statusConfig } from '@client/lib/tickets';
 
 // ============================================
 // SORTABLE HEADER HELPER

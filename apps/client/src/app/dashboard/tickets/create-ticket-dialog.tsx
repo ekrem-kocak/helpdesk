@@ -9,7 +9,6 @@ import axios from 'axios';
 import {
   CreateTicketInput,
   Priority,
-  Role,
   type ApiResponse,
   type Ticket,
 } from '@helpdesk/shared/interfaces';
@@ -34,6 +33,7 @@ import {
 import { Loader2, PlusCircle } from 'lucide-react';
 import { apiClient } from '../../../lib/api-client';
 import { useAuthStore } from '../../../store/auth.store';
+import { isUserRole } from '../../../lib/auth';
 
 const createTicketSchema = z.object({
   title: z
@@ -66,7 +66,7 @@ export function CreateTicketDialog({
 }: CreateTicketDialogProps) {
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
-  const isUserRole = user?.role === Role.USER;
+  const isUser = isUserRole(user);
   const [internalOpen, setInternalOpen] = useState(false);
 
   const open = controlledOpen ?? internalOpen;
@@ -106,7 +106,7 @@ export function CreateTicketDialog({
     createMutation.mutate({
       title: data.title,
       description: data.description,
-      ...(isUserRole ? {} : { priority: data.priority }),
+      ...(isUser ? {} : { priority: data.priority }),
     });
   };
 
@@ -132,7 +132,7 @@ export function CreateTicketDialog({
         <DialogHeader>
           <DialogTitle className="text-xl">New support ticket</DialogTitle>
           <DialogDescription>
-            {isUserRole
+            {isUser
               ? 'Share your issue with a title and description. Priority will be set automatically.'
               : 'Share your issue with a title and description. Select a priority if possible.'}
           </DialogDescription>
@@ -185,7 +185,7 @@ export function CreateTicketDialog({
               )}
             />
 
-            {!isUserRole && (
+            {!isUser && (
               <FormField
                 control={form.control}
                 name="priority"

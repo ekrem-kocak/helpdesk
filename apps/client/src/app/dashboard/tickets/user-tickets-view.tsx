@@ -9,7 +9,8 @@ import {
   Badge,
   Input,
 } from '@helpdesk/shared/ui';
-import { statusConfig, priorityConfig } from './columns';
+import { formatDate } from '../../../lib/format';
+import { statusConfig, priorityConfig } from '../../../lib/tickets';
 import { TicketIcon, Calendar, Search, Inbox } from 'lucide-react';
 
 interface UserTicketsViewProps {
@@ -17,18 +18,7 @@ interface UserTicketsViewProps {
   searchPlaceholder?: string;
 }
 
-function formatDate(date: Date | string) {
-  return new Date(date).toLocaleDateString('en-US', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
-export function UserTicketsView({
-  tickets,
-  searchPlaceholder = 'Search tickets...',
-}: UserTicketsViewProps) {
+function useTicketSearch(tickets: Ticket[]) {
   const [search, setSearch] = useState('');
 
   const filteredTickets = useMemo(() => {
@@ -40,6 +30,19 @@ export function UserTicketsView({
         t.description?.toLowerCase().includes(q),
     );
   }, [tickets, search]);
+
+  return {
+    search,
+    setSearch,
+    filteredTickets,
+  };
+}
+
+export function UserTicketsView({
+  tickets,
+  searchPlaceholder = 'Search tickets...',
+}: UserTicketsViewProps) {
+  const { search, setSearch, filteredTickets } = useTicketSearch(tickets);
 
   if (tickets.length === 0) {
     return (

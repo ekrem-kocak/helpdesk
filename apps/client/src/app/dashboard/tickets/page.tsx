@@ -1,36 +1,19 @@
 'use client';
 
-import {
-  Role,
-  ApiPaginatedResponse,
-  Ticket,
-} from '@helpdesk/shared/interfaces';
-import { useQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { DataTable } from '../../../components/data-table';
-import { apiClient } from '../../../lib/api-client';
 import { useAuthStore } from '../../../store/auth.store';
+import { isUserRole } from '../../../lib/auth';
 import { CreateTicketDialog } from './create-ticket-dialog';
 import { UserTicketsView } from './user-tickets-view';
 import { getColumns } from './columns';
+import { useTickets } from '../../../hooks/use-tickets';
 
 export default function TicketsPage() {
   const user = useAuthStore((state) => state.user);
-  const isUserRole = user?.role === Role.USER;
+  const isUser = isUserRole(user);
 
-  const {
-    data: tickets = [],
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
-    queryKey: ['tickets'],
-    queryFn: async () => {
-      const { data } =
-        await apiClient.get<ApiPaginatedResponse<Ticket>>('/tickets');
-      return data.data;
-    },
-  });
+  const { tickets, isLoading, isError, error } = useTickets();
 
   if (isLoading) {
     return (
@@ -51,7 +34,7 @@ export default function TicketsPage() {
     );
   }
 
-  if (isUserRole) {
+  if (isUser) {
     return (
       <div className="space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -87,7 +70,7 @@ export default function TicketsPage() {
         <CreateTicketDialog />
       </div>
       <DataTable
-        columns={getColumns(user?.role)}
+        columns={getColumns(user)}
         data={tickets}
         searchKey="title"
         searchPlaceholder="Search by title..."

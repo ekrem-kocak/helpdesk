@@ -1,12 +1,7 @@
 'use client';
 
 import { createColumnHelper } from '@tanstack/react-table';
-import {
-  type Ticket,
-  type Status as TicketStatus,
-  type Priority as TicketPriority,
-  Role,
-} from '@helpdesk/shared/interfaces';
+import type { Ticket } from '@helpdesk/shared/interfaces';
 import {
   Badge,
   Button,
@@ -18,42 +13,9 @@ import {
   DropdownMenuTrigger,
 } from '@helpdesk/shared/ui';
 import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
-
-// ============================================
-// STATUS & PRIORITY CONFIG (exported for use in UserTicketsView)
-// ============================================
-
-export const statusConfig: Record<
-  TicketStatus,
-  { label: string; className: string }
-> = {
-  OPEN: {
-    label: 'Open',
-    className: 'bg-blue-100 text-blue-800 border-blue-200',
-  },
-  IN_PROGRESS: {
-    label: 'In Progress',
-    className: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  },
-  RESOLVED: {
-    label: 'Resolved',
-    className: 'bg-green-100 text-green-800 border-green-200',
-  },
-  CLOSED: {
-    label: 'Closed',
-    className: 'bg-gray-100 text-gray-800 border-gray-200',
-  },
-};
-
-export const priorityConfig: Record<
-  TicketPriority,
-  { label: string; className: string }
-> = {
-  LOW: { label: 'Low', className: 'text-muted-foreground' },
-  MEDIUM: { label: 'Medium', className: 'text-yellow-600' },
-  HIGH: { label: 'High', className: 'text-orange-600 font-semibold' },
-  URGENT: { label: 'Urgent', className: 'text-red-600 font-bold' },
-};
+import { canManageTicketActions, type UserWithRole } from '../../../lib/auth';
+import { formatDate } from '../../../lib/format';
+import { priorityConfig, statusConfig } from '../../../lib/tickets';
 
 // ============================================
 // SORTABLE HEADER HELPER
@@ -88,7 +50,7 @@ function SortableHeader({
 
 const columnHelper = createColumnHelper<Ticket>();
 
-export const getColumns = (userRole: Role | undefined) => [
+export const getColumns = (user: UserWithRole) => [
   columnHelper.accessor('id', {
     header: 'ID',
     cell: (info) => (
@@ -135,11 +97,7 @@ export const getColumns = (userRole: Role | undefined) => [
     ),
     cell: (info) => (
       <span className="text-muted-foreground text-sm">
-        {new Date(info.getValue()).toLocaleDateString('en-US', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-        })}
+        {formatDate(info.getValue())}
       </span>
     ),
   }),
@@ -150,7 +108,7 @@ export const getColumns = (userRole: Role | undefined) => [
     cell: ({ row }) => {
       const ticket = row.original;
 
-      if (userRole === Role.USER) {
+      if (!canManageTicketActions(user)) {
         return null;
       }
 

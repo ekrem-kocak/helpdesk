@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import type { Ticket } from '@helpdesk/shared/interfaces';
 import {
   Card,
@@ -59,7 +60,7 @@ export function UserTicketsView({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="relative">
         <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
         <Input
@@ -67,55 +68,60 @@ export function UserTicketsView({
           placeholder={searchPlaceholder}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="border-muted-foreground/20 bg-muted/30 placeholder:text-muted-foreground focus-visible:bg-background h-11 rounded-xl pl-10 transition-colors"
+          className="border-muted-foreground/20 bg-muted/30 placeholder:text-muted-foreground focus-visible:bg-background h-10 rounded-xl pl-10 transition-colors"
         />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {filteredTickets.map((ticket) => {
           const status = statusConfig[ticket.status];
           const priority = priorityConfig[ticket.priority];
           return (
-            <Card
+            <Link
               key={ticket.id}
-              className="group border-muted-foreground/10 bg-card/80 hover:border-primary/20 overflow-hidden rounded-2xl shadow-sm transition-all duration-200 hover:shadow-md"
+              href={`/dashboard/tickets/${ticket.id}`}
+              className="block h-full"
             >
-              <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 pb-2">
-                <div className="flex min-w-0 flex-1 items-start gap-2">
-                  <div className="bg-primary/10 text-primary rounded-lg p-2">
-                    <TicketIcon className="h-4 w-4" />
+              <Card className="group border-muted-foreground/10 bg-card/80 hover:border-primary/20 hover:bg-card flex h-full cursor-pointer flex-col gap-1 overflow-hidden rounded-2xl shadow-sm transition-all duration-200 hover:shadow-md">
+                <CardHeader className="flex min-h-18 flex-row items-start justify-between gap-2 space-y-0 pb-1">
+                  <div className="flex min-w-0 flex-1 items-start gap-2">
+                    <div className="bg-primary/10 text-primary shrink-0 rounded-lg p-2">
+                      <TicketIcon className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="line-clamp-1 text-sm leading-tight font-semibold tracking-tight">
+                        {ticket.title}
+                      </h3>
+                      <p className="text-muted-foreground mt-0.5 flex items-center gap-1 text-xs">
+                        <Calendar className="h-3 w-3" />
+                        {formatDate(ticket.createdAt)}
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="line-clamp-2 leading-tight font-semibold tracking-tight">
-                      {ticket.title}
-                    </h3>
-                    <p className="text-muted-foreground mt-0.5 flex items-center gap-1 text-xs">
-                      <Calendar className="h-3 w-3" />
-                      {formatDate(ticket.createdAt)}
-                    </p>
+                  <Badge
+                    variant="outline"
+                    className={`shrink-0 ${status.className}`}
+                  >
+                    {status.label}
+                  </Badge>
+                </CardHeader>
+                <CardContent className="flex flex-1 flex-col py-0">
+                  <p className="text-muted-foreground line-clamp-3 text-xs leading-relaxed">
+                    {ticket.description || 'No description'}
+                  </p>
+                  <div className="border-muted/50 mt-auto flex items-center justify-between border-t pt-2.5">
+                    <span
+                      className={`text-xs font-medium ${priority.className}`}
+                    >
+                      {priority.label}
+                    </span>
+                    <span className="text-muted-foreground font-mono text-xs">
+                      #{ticket.id.slice(0, 8)}
+                    </span>
                   </div>
-                </div>
-                <Badge
-                  variant="outline"
-                  className={`shrink-0 ${status.className}`}
-                >
-                  {status.label}
-                </Badge>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-muted-foreground line-clamp-2 text-sm">
-                  {ticket.description || 'No description'}
-                </p>
-                <div className="border-muted/50 mt-3 flex items-center justify-between border-t pt-3">
-                  <span className={`text-xs font-medium ${priority.className}`}>
-                    {priority.label}
-                  </span>
-                  <span className="text-muted-foreground font-mono text-xs">
-                    #{ticket.id.slice(0, 8)}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </Link>
           );
         })}
       </div>

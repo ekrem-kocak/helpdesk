@@ -36,14 +36,14 @@ export default function TicketsPage() {
 
   if (isUser) {
     return (
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="space-y-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-foreground text-lg font-semibold tracking-tight">
               My Tickets
             </h2>
             <p className="text-muted-foreground text-sm">
-              View your support tickets and create new ones.
+              View and manage your support tickets
             </p>
           </div>
           <CreateTicketDialog />
@@ -57,14 +57,14 @@ export default function TicketsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-foreground text-lg font-semibold tracking-tight">
             All Tickets
           </h2>
           <p className="text-muted-foreground text-sm">
-            Manage all support tickets or create a new one.
+            Manage all support tickets and create new ones
           </p>
         </div>
         <CreateTicketDialog />

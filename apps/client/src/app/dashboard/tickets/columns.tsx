@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { createColumnHelper } from '@tanstack/react-table';
 import type { Ticket } from '@helpdesk/shared/interfaces';
 import {
@@ -16,10 +17,6 @@ import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
 import { canManageTicketActions, type UserWithRole } from '@client/lib/auth';
 import { formatDate } from '@client/lib/format';
 import { priorityConfig, statusConfig } from '@client/lib/tickets';
-
-// ============================================
-// SORTABLE HEADER HELPER
-// ============================================
 
 function SortableHeader({
   column,
@@ -44,10 +41,6 @@ function SortableHeader({
   );
 }
 
-// ============================================
-// COLUMN DEFINITIONS (Type-safe with createColumnHelper)
-// ============================================
-
 const columnHelper = createColumnHelper<Ticket>();
 
 export const getColumns = (user: UserWithRole) => [
@@ -64,9 +57,12 @@ export const getColumns = (user: UserWithRole) => [
   columnHelper.accessor('title', {
     header: ({ column }) => <SortableHeader column={column} label="Title" />,
     cell: (info) => (
-      <span className="block max-w-[300px] truncate font-medium">
+      <Link
+        href={`/dashboard/tickets/${info.row.original.id}`}
+        className="hover:text-primary block max-w-75 truncate font-medium transition-colors hover:underline"
+      >
         {info.getValue()}
-      </span>
+      </Link>
     ),
   }),
 
@@ -128,8 +124,16 @@ export const getColumns = (user: UserWithRole) => [
               Copy ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View Details</DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem asChild>
+              <Link href={`/dashboard/tickets/${ticket.id}`}>View Details</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={(e) => {
+                e.preventDefault();
+                console.warn('Delete not implemented yet');
+              }}
+            >
               Delete
             </DropdownMenuItem>
           </DropdownMenuContent>

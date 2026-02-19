@@ -9,17 +9,25 @@ import {
   Clock,
   Mail,
   Shield,
-  Edit3,
   Flag,
   UserPlus,
+  Zap,
+  Edit,
 } from 'lucide-react';
 import { useTicket } from '@client/hooks/use-ticket';
 import { useAuthStore } from '@client/store/auth.store';
 import { formatDate } from '@client/lib/format';
 import { statusConfig, priorityConfig } from '@client/lib/tickets';
+import {
+  canEditTicketByRole,
+  canEditTicketByStatus,
+  getTicketEditDisabledReason,
+  canManageTicketActions,
+} from '@client/lib/auth';
 import { TICKET, MESSAGES } from '@client/lib/constants';
 import { getErrorMessage } from '@client/lib/errors';
 import { AIInfoCard } from '@client/components/ai-info-card';
+import { EditTicketDialog } from '@client/app/dashboard/tickets/edit-ticket-dialog';
 import {
   Badge,
   Button,
@@ -28,6 +36,10 @@ import {
   CardHeader,
   Separator,
   Avatar,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@helpdesk/shared/ui';
 
 export default function TicketDetailPage() {
@@ -37,7 +49,11 @@ export default function TicketDetailPage() {
   const ticketId = params.id as string;
 
   const { ticket, isLoading, isError, error } = useTicket(ticketId);
-  const isSupport = user?.role === 'SUPPORT' || user?.role === 'ADMIN';
+  const isSupport = canManageTicketActions(user);
+
+  const canEditByRole = canEditTicketByRole(user, ticket);
+  const canEditByStatus = canEditTicketByStatus(user, ticket);
+  const disabledReason = getTicketEditDisabledReason(user, ticket);
 
   if (isLoading) {
     return (
@@ -83,9 +99,40 @@ export default function TicketDetailPage() {
           <ArrowLeft className="h-4 w-4" />
           Back
         </Button>
-        <span className="text-muted-foreground font-mono text-sm">
-          #{ticket.id.slice(0, TICKET.ID_DISPLAY_LENGTH)}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-muted-foreground font-mono text-sm">
+            #{ticket.id.slice(0, TICKET.ID_DISPLAY_LENGTH)}
+          </span>
+          {canEditByRole && ticket && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <EditTicketDialog
+                      ticket={ticket}
+                      trigger={
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-2"
+                          disabled={!canEditByStatus}
+                        >
+                          <Edit className="h-4 w-4" />
+                          Edit
+                        </Button>
+                      }
+                    />
+                  </div>
+                </TooltipTrigger>
+                {!canEditByStatus && (
+                  <TooltipContent side="bottom">
+                    {disabledReason}
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
@@ -116,7 +163,7 @@ export default function TicketDetailPage() {
                   <h3 className="text-muted-foreground mb-1.5 text-xs font-medium tracking-wider uppercase">
                     Description
                   </h3>
-                  <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">
+                  <p className="text-sm leading-relaxed wrap-break-word whitespace-pre-wrap">
                     {ticket.description}
                   </p>
                 </div>
@@ -196,7 +243,7 @@ export default function TicketDetailPage() {
             <Card className="border-muted-foreground/10">
               <CardHeader className="pb-3">
                 <h3 className="flex items-center gap-2 text-sm font-semibold">
-                  <Edit3 className="h-4 w-4" />
+                  <Zap className="h-4 w-4" />
                   Quick Actions
                 </h3>
               </CardHeader>

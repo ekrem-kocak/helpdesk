@@ -2,7 +2,6 @@ import {
   ApiPaginatedResponse,
   CurrentUser,
   JwtAuthGuard,
-  Roles,
 } from '@helpdesk/api/shared';
 import { PageDto, PageOptionsDto } from '@helpdesk/api/shared';
 import { UserEntity } from '@helpdesk/api/users';
@@ -22,7 +21,8 @@ import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { TicketEntity } from './entities/ticket.entity';
 import { TicketService } from './ticket.service';
-import { Role } from '@helpdesk/shared/interfaces';
+import { TicketOwnershipGuard } from './guards/ticket-ownership.guard';
+import { CanChangeStatusGuard } from './guards/can-change-status.guard';
 
 @ApiTags('Tickets')
 @ApiBearerAuth('JWT-auth')
@@ -41,9 +41,6 @@ export class TicketController {
     return new TicketEntity(ticket);
   }
 
-  // @UseInterceptors(CacheInterceptor)
-  // @CacheKey('all-tickets')
-  // @CacheTTL(30000)
   @Get()
   @ApiPaginatedResponse(TicketEntity, 'Paginated list of tickets')
   @ApiOperation({ summary: 'Get all tickets (Paginated)' })
@@ -74,6 +71,7 @@ export class TicketController {
   }
 
   @Patch(':id')
+  @UseGuards(TicketOwnershipGuard, CanChangeStatusGuard)
   @ApiOperation({ summary: 'Update a ticket by ID' })
   async update(
     @Param('id') id: string,

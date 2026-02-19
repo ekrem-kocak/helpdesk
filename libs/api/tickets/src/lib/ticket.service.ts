@@ -105,6 +105,9 @@ export class TicketService {
     return this.prisma.ticket.update({
       where: { id },
       data: updateTicketDto,
+      include: {
+        user: true,
+      },
     });
   }
 

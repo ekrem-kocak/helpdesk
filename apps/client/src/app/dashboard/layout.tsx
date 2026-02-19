@@ -240,8 +240,8 @@ export default function DashboardLayout({
           className={cn(
             'flex flex-1 flex-col transition-all',
             TRANSITIONS.SIDEBAR,
-            `lg:${LAYOUT.CONTENT_MARGIN_EXPANDED}`,
-            isDesktopCollapsed && `lg:${LAYOUT.CONTENT_MARGIN_COLLAPSED}`,
+            'lg:ml-64',
+            isDesktopCollapsed && 'lg:ml-16',
           )}
         >
           <header

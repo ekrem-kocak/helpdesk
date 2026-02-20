@@ -13,7 +13,7 @@ import { Role, Status } from '@helpdesk/shared/interfaces';
  *
  * Permission Rules:
  * - ADMIN: Can edit all tickets regardless of status
- * - SUPPORT: Can edit all tickets except CLOSED ones
+ * - SUPPORT: Can edit all tickets except CLOSED and CANCELLED (final states)
  * - USER: Can only edit their own OPEN tickets
  */
 @Injectable()
@@ -42,9 +42,12 @@ export class TicketOwnershipGuard implements CanActivate {
     }
 
     if (user.role === Role.SUPPORT) {
-      if (ticket.status === Status.CLOSED) {
+      if (
+        ticket.status === Status.CLOSED ||
+        ticket.status === Status.CANCELLED
+      ) {
         throw new ForbiddenException(
-          'Closed tickets can only be edited by admins',
+          'Final state tickets (Closed/Cancelled) can only be edited by admins',
         );
       }
       return true;

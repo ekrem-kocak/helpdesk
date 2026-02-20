@@ -13,6 +13,7 @@ export enum Status {
   IN_PROGRESS = 'IN_PROGRESS',
   RESOLVED = 'RESOLVED',
   CLOSED = 'CLOSED',
+  CANCELLED = 'CANCELLED',
 }
 
 export enum Priority {

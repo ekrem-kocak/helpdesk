@@ -59,6 +59,7 @@ enum Status {
   IN_PROGRESS
   RESOLVED
   CLOSED
+  CANCELLED
 }
 
 enum Priority {

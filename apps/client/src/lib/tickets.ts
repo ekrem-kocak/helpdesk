@@ -25,6 +25,10 @@ export const statusConfig: StatusConfig = {
     label: 'Closed',
     className: 'bg-gray-100 text-gray-800 border-gray-200',
   },
+  CANCELLED: {
+    label: 'Cancelled',
+    className: 'bg-red-100 text-red-800 border-red-200',
+  },
 };
 
 /** Single source of truth for ticket priority display. */

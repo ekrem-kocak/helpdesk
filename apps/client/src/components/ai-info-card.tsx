@@ -38,7 +38,7 @@ export function AIInfoCard({ variant, content }: AIInfoCardProps) {
 
   return (
     <Card className={`${config.colors.border} ${config.colors.background}`}>
-      <CardHeader className="pb-3">
+      <CardHeader>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
           <div className="flex items-center gap-2">
             <div className={`rounded-md ${config.colors.iconBg} p-1.5`}>
@@ -54,7 +54,7 @@ export function AIInfoCard({ variant, content }: AIInfoCardProps) {
         </div>
       </CardHeader>
       <Separator className={config.colors.separator} />
-      <CardContent className="pt-3">
+      <CardContent>
         <p className="text-sm leading-relaxed break-words">{content}</p>
       </CardContent>
     </Card>

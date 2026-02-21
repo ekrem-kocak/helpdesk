@@ -13,6 +13,7 @@ import {
   UserPlus,
   Zap,
   Edit,
+  Ban,
 } from 'lucide-react';
 import { useTicket } from '@client/hooks/use-ticket';
 import { useAuthStore } from '@client/store/auth.store';
@@ -23,11 +24,13 @@ import {
   canEditTicketByStatus,
   getTicketEditDisabledReason,
   canManageTicketActions,
+  canCancelTicket,
 } from '@client/lib/auth';
 import { TICKET, MESSAGES } from '@client/lib/constants';
 import { getErrorMessage } from '@client/lib/errors';
 import { AIInfoCard } from '@client/components/ai-info-card';
 import { EditTicketDialog } from '@client/app/dashboard/tickets/edit-ticket-dialog';
+import { CancelTicketDialog } from '@client/app/dashboard/tickets/cancel-ticket-dialog';
 import {
   Badge,
   Button,
@@ -54,6 +57,7 @@ export default function TicketDetailPage() {
   const canEditByRole = canEditTicketByRole(user, ticket);
   const canEditByStatus = canEditTicketByStatus(user, ticket);
   const disabledReason = getTicketEditDisabledReason(user, ticket);
+  const canCancel = canCancelTicket(user, ticket);
 
   if (isLoading) {
     return (
@@ -99,46 +103,15 @@ export default function TicketDetailPage() {
           <ArrowLeft className="h-4 w-4" />
           Back
         </Button>
-        <div className="flex items-center gap-2">
-          <span className="text-muted-foreground font-mono text-sm">
-            #{ticket.id.slice(0, TICKET.ID_DISPLAY_LENGTH)}
-          </span>
-          {canEditByRole && ticket && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div>
-                    <EditTicketDialog
-                      ticket={ticket}
-                      trigger={
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="gap-2"
-                          disabled={!canEditByStatus}
-                        >
-                          <Edit className="h-4 w-4" />
-                          Edit
-                        </Button>
-                      }
-                    />
-                  </div>
-                </TooltipTrigger>
-                {!canEditByStatus && (
-                  <TooltipContent side="bottom">
-                    {disabledReason}
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
-          )}
-        </div>
+        <span className="text-muted-foreground font-mono text-sm">
+          #{ticket.id.slice(0, TICKET.ID_DISPLAY_LENGTH)}
+        </span>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
         <div className="space-y-4">
           <Card className="border-muted-foreground/10">
-            <CardHeader className="pb-3">
+            <CardHeader>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <h1 className="text-lg leading-tight font-bold tracking-tight sm:text-xl">
                   {ticket.title}
@@ -157,7 +130,7 @@ export default function TicketDetailPage() {
               </div>
             </CardHeader>
             <Separator />
-            <CardContent className="pt-3">
+            <CardContent>
               <div className="space-y-4">
                 <div>
                   <h3 className="text-muted-foreground mb-1.5 text-xs font-medium tracking-wider uppercase">
@@ -239,48 +212,98 @@ export default function TicketDetailPage() {
             </CardContent>
           </Card>
 
-          {isSupport && (
+          {(canEditByRole || canCancel || isSupport) && (
             <Card className="border-muted-foreground/10">
-              <CardHeader className="pb-3">
+              <CardHeader>
                 <h3 className="flex items-center gap-2 text-sm font-semibold">
                   <Zap className="h-4 w-4" />
                   Quick Actions
                 </h3>
               </CardHeader>
               <Separator />
-              <CardContent className="space-y-2 pt-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hover:bg-muted w-full justify-start gap-2 text-sm"
-                  disabled
-                >
-                  <Flag className="h-3.5 w-3.5" />
-                  Change Status
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hover:bg-muted w-full justify-start gap-2 text-sm"
-                  disabled
-                >
-                  <AlertCircle className="h-3.5 w-3.5" />
-                  Change Priority
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hover:bg-muted w-full justify-start gap-2 text-sm"
-                  disabled
-                >
-                  <UserPlus className="h-3.5 w-3.5" />
-                  Assign to Me
-                </Button>
-                <div className="bg-muted/30 mt-3 rounded-md px-3 py-2">
-                  <p className="text-muted-foreground text-center text-xs">
-                    {MESSAGES.COMING_SOON}
-                  </p>
-                </div>
+              <CardContent className="space-y-2">
+                {canEditByRole && ticket && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <EditTicketDialog
+                            ticket={ticket}
+                            trigger={
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="hover:bg-muted w-full justify-start gap-2 text-sm"
+                                disabled={!canEditByStatus}
+                              >
+                                <Edit className="h-3.5 w-3.5" />
+                                Edit Ticket
+                              </Button>
+                            }
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      {!canEditByStatus && (
+                        <TooltipContent side="right">
+                          {disabledReason}
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+
+                {canCancel && (
+                  <CancelTicketDialog
+                    ticket={ticket}
+                    trigger={
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="hover:bg-muted text-destructive hover:text-destructive w-full justify-start gap-2 text-sm"
+                      >
+                        <Ban className="h-3.5 w-3.5" />
+                        Cancel Ticket
+                      </Button>
+                    }
+                  />
+                )}
+
+                {isSupport && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="hover:bg-muted w-full justify-start gap-2 text-sm"
+                      disabled
+                    >
+                      <Flag className="h-3.5 w-3.5" />
+                      Change Status
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="hover:bg-muted w-full justify-start gap-2 text-sm"
+                      disabled
+                    >
+                      <AlertCircle className="h-3.5 w-3.5" />
+                      Change Priority
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="hover:bg-muted w-full justify-start gap-2 text-sm"
+                      disabled
+                    >
+                      <UserPlus className="h-3.5 w-3.5" />
+                      Assign to Me
+                    </Button>
+                    <div className="bg-muted/30 mt-3 rounded-md px-3 py-2">
+                      <p className="text-muted-foreground text-center text-xs">
+                        {MESSAGES.COMING_SOON}
+                      </p>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           )}

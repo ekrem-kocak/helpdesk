@@ -82,7 +82,7 @@ export function UserTicketsView({
               href={`/dashboard/tickets/${ticket.id}`}
               className="block h-full"
             >
-              <Card className="group border-muted-foreground/10 bg-card/80 hover:border-primary/20 hover:bg-card flex h-full cursor-pointer flex-col gap-1 overflow-hidden rounded-2xl shadow-sm transition-all duration-200 hover:shadow-md">
+              <Card className="group border-muted-foreground/10 bg-card/80 hover:border-primary/20 hover:bg-card flex h-full cursor-pointer overflow-hidden rounded-2xl shadow-sm transition-all duration-200 hover:shadow-md">
                 <CardHeader className="flex min-h-18 flex-row items-start justify-between gap-2 space-y-0 pb-1">
                   <div className="flex min-w-0 flex-1 items-start gap-2">
                     <div className="bg-primary/10 text-primary shrink-0 rounded-lg p-2">

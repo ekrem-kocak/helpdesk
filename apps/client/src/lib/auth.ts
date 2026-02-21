@@ -48,8 +48,8 @@ export function canEditTicketByRole(
  *
  * Rules:
  * - USER: Can only edit OPEN tickets
- * - SUPPORT: Can edit all except CLOSED tickets
- * - ADMIN: Can edit all tickets (including CLOSED)
+ * - SUPPORT: Can edit all except CLOSED and CANCELLED (final states)
+ * - ADMIN: Can edit all tickets (including CLOSED and CANCELLED)
  */
 export function canEditTicketByStatus(
   user: UserWithRole,
@@ -62,7 +62,9 @@ export function canEditTicketByStatus(
   }
 
   if (user.role === Role.SUPPORT) {
-    return ticket.status !== Status.CLOSED;
+    return (
+      ticket.status !== Status.CLOSED && ticket.status !== Status.CANCELLED
+    );
   }
 
   if (user.role === Role.USER) {
@@ -86,9 +88,50 @@ export function getTicketEditDisabledReason(
     return 'You can only edit tickets with OPEN status';
   }
 
-  if (user.role === Role.SUPPORT && ticket.status === Status.CLOSED) {
-    return 'Closed tickets cannot be edited';
+  if (
+    user.role === Role.SUPPORT &&
+    (ticket.status === Status.CLOSED || ticket.status === Status.CANCELLED)
+  ) {
+    return 'Final state tickets (Closed/Cancelled) cannot be edited';
   }
 
   return '';
+}
+
+/**
+ * Check if user can cancel a ticket.
+ * Cancelling is only allowed for non-final state tickets.
+ *
+ * Rules:
+ * - USER: Can cancel only their own OPEN tickets
+ * - SUPPORT: Can cancel OPEN, IN_PROGRESS, RESOLVED tickets
+ * - ADMIN: Can cancel any ticket except already CLOSED or CANCELLED
+ */
+export function canCancelTicket(
+  user: UserWithOwnership,
+  ticket: Pick<Ticket, 'userId' | 'status'> | null | undefined,
+): boolean {
+  if (!user || !ticket) return false;
+
+  // Already in final state - cannot cancel
+  if (ticket.status === Status.CLOSED || ticket.status === Status.CANCELLED) {
+    return false;
+  }
+
+  // ADMIN can cancel any non-final ticket
+  if (user.role === Role.ADMIN) {
+    return true;
+  }
+
+  // SUPPORT can cancel any non-final ticket
+  if (user.role === Role.SUPPORT) {
+    return true;
+  }
+
+  // USER can only cancel their own OPEN tickets
+  if (user.role === Role.USER) {
+    return user.id === ticket.userId && ticket.status === Status.OPEN;
+  }
+
+  return false;
 }

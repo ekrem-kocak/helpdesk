@@ -1,10 +1,11 @@
 import { AiService } from '@helpdesk/api/ai';
 import { Prisma, PrismaService, Ticket } from '@helpdesk/api/data-access-db';
 import { QueueService } from '@helpdesk/api/queue';
-import { PageDto, PageMetaDto, PageOptionsDto } from '@helpdesk/api/shared';
+import { PageDto, PageMetaDto } from '@helpdesk/api/shared';
 import { Priority, Role, User } from '@helpdesk/shared/interfaces';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
+import { TicketPageOptionsDto } from './dto/ticket-page-options.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 
 @Injectable()
@@ -33,7 +34,7 @@ export class TicketService {
         aiSummary: analysis.summary,
       },
       include: {
-        user: true, // return the user who created the ticket
+        user: true,
       },
     });
 
@@ -48,7 +49,7 @@ export class TicketService {
   }
 
   async findAll(
-    pageOptionsDto: PageOptionsDto,
+    pageOptionsDto: TicketPageOptionsDto,
     user: User,
   ): Promise<PageDto<Ticket>> {
     const where: Prisma.TicketWhereInput = {};
@@ -57,19 +58,36 @@ export class TicketService {
       where.userId = user.id;
     }
 
+    if (pageOptionsDto.status != null) {
+      where.status = pageOptionsDto.status;
+    }
+    if (pageOptionsDto.priority != null) {
+      where.priority = pageOptionsDto.priority;
+    }
+    if (pageOptionsDto.search?.trim()) {
+      const term = pageOptionsDto.search.trim();
+      where.OR = [
+        { title: { contains: term, mode: 'insensitive' } },
+        { description: { contains: term, mode: 'insensitive' } },
+      ];
+    }
+
+    const orderByField = pageOptionsDto.orderBy ?? 'createdAt';
+    const orderBy = {
+      [orderByField]: pageOptionsDto.order,
+    } as Prisma.TicketOrderByWithRelationInput;
+
     const [data, itemCount] = await this.prisma.$transaction([
       this.prisma.ticket.findMany({
         where,
         skip: pageOptionsDto.skip,
         take: pageOptionsDto.take,
-        orderBy: {
-          createdAt: pageOptionsDto.order,
-        },
+        orderBy,
         include: {
           user: true,
         },
       }),
-      this.prisma.ticket.count(),
+      this.prisma.ticket.count({ where }),
     ]);
 
     const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });

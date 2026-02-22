@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { createColumnHelper } from '@tanstack/react-table';
-import type { Ticket } from '@helpdesk/shared/interfaces';
+import { SortOrder, type Ticket } from '@helpdesk/shared/interfaces';
 import {
   Badge,
   Button,
@@ -17,24 +17,38 @@ import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
 import { canManageTicketActions, type UserWithRole } from '@client/lib/auth';
 import { formatDate } from '@client/lib/format';
 import { priorityConfig, statusConfig } from '@client/lib/tickets';
+import type { TicketOrderBy } from '@client/lib/ticket-params';
 
 function SortableHeader({
   column,
   label,
+  onServerSort,
+  serverSortState,
 }: {
   column: {
+    id: string;
     toggleSorting: (desc?: boolean) => void;
     getIsSorted: () => false | 'asc' | 'desc';
   };
   label: string;
+  onServerSort?: (orderBy: TicketOrderBy, order: SortOrder) => void;
+  serverSortState?: { orderBy: TicketOrderBy; order: SortOrder };
 }) {
+  const handleClick = () => {
+    if (onServerSort) {
+      const orderBy = column.id as TicketOrderBy;
+      const isThisColumn = serverSortState?.orderBy === orderBy;
+      const nextOrder: SortOrder =
+        isThisColumn && serverSortState?.order === SortOrder.ASC
+          ? SortOrder.DESC
+          : SortOrder.ASC;
+      onServerSort(orderBy, nextOrder);
+    } else {
+      column.toggleSorting(column.getIsSorted() === 'asc');
+    }
+  };
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="-ml-3"
-      onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-    >
+    <Button variant="ghost" size="sm" className="-ml-3" onClick={handleClick}>
       {label}
       <ArrowUpDown className="ml-2 h-3 w-3" />
     </Button>
@@ -43,7 +57,15 @@ function SortableHeader({
 
 const columnHelper = createColumnHelper<Ticket>();
 
-export const getColumns = (user: UserWithRole) => [
+export interface TicketColumnsOptions {
+  onServerSort?: (orderBy: TicketOrderBy, order: SortOrder) => void;
+  sortState?: { orderBy: TicketOrderBy; order: SortOrder };
+}
+
+export const getColumns = (
+  user: UserWithRole,
+  options?: TicketColumnsOptions,
+) => [
   columnHelper.accessor('id', {
     header: 'ID',
     cell: (info) => (
@@ -55,7 +77,8 @@ export const getColumns = (user: UserWithRole) => [
   }),
 
   columnHelper.accessor('title', {
-    header: ({ column }) => <SortableHeader column={column} label="Title" />,
+    header: 'Title',
+    enableSorting: false,
     cell: (info) => (
       <Link
         href={`/dashboard/tickets/${info.row.original.id}`}
@@ -67,7 +90,14 @@ export const getColumns = (user: UserWithRole) => [
   }),
 
   columnHelper.accessor('status', {
-    header: 'Status',
+    header: ({ column }) => (
+      <SortableHeader
+        column={column}
+        label="Status"
+        onServerSort={options?.onServerSort}
+        serverSortState={options?.sortState}
+      />
+    ),
     cell: (info) => {
       const config = statusConfig[info.getValue()];
       return (
@@ -80,7 +110,14 @@ export const getColumns = (user: UserWithRole) => [
   }),
 
   columnHelper.accessor('priority', {
-    header: ({ column }) => <SortableHeader column={column} label="Priority" />,
+    header: ({ column }) => (
+      <SortableHeader
+        column={column}
+        label="Priority"
+        onServerSort={options?.onServerSort}
+        serverSortState={options?.sortState}
+      />
+    ),
     cell: (info) => {
       const config = priorityConfig[info.getValue()];
       return <span className={config.className}>{config.label}</span>;
@@ -89,7 +126,12 @@ export const getColumns = (user: UserWithRole) => [
 
   columnHelper.accessor('createdAt', {
     header: ({ column }) => (
-      <SortableHeader column={column} label="Created At" />
+      <SortableHeader
+        column={column}
+        label="Created At"
+        onServerSort={options?.onServerSort}
+        serverSortState={options?.sortState}
+      />
     ),
     cell: (info) => (
       <span className="text-muted-foreground text-sm">

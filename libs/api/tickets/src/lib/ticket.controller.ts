@@ -3,7 +3,8 @@ import {
   CurrentUser,
   JwtAuthGuard,
 } from '@helpdesk/api/shared';
-import { PageDto, PageOptionsDto } from '@helpdesk/api/shared';
+import { PageDto } from '@helpdesk/api/shared';
+import { TicketPageOptionsDto } from './dto/ticket-page-options.dto';
 import { UserEntity } from '@helpdesk/api/users';
 import {
   Body,
@@ -46,7 +47,7 @@ export class TicketController {
   @ApiOperation({ summary: 'Get all tickets (Paginated)' })
   async findAll(
     @CurrentUser() user: UserEntity,
-    @Query() pageOptionsDto: PageOptionsDto,
+    @Query() pageOptionsDto: TicketPageOptionsDto,
   ): Promise<PageDto<TicketEntity>> {
     const tickets = await this.ticketService.findAll(pageOptionsDto, user);
 

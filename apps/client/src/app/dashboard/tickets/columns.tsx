@@ -1,11 +1,9 @@
 'use client';
 
+import { useState } from 'react';
+import Link from 'next/link';
 import { createColumnHelper } from '@tanstack/react-table';
-import type {
-  Ticket,
-  Status as TicketStatus,
-  Priority as TicketPriority,
-} from '@helpdesk/shared/interfaces';
+import { SortOrder, type Ticket } from '@helpdesk/shared/interfaces';
 import {
   Badge,
   Button,
@@ -16,76 +14,64 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@helpdesk/shared/ui';
-import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
-
-// ============================================
-// STATUS & PRIORITY CONFIG
-// ============================================
-
-const statusConfig: Record<TicketStatus, { label: string; className: string }> =
-  {
-    OPEN: {
-      label: 'Open',
-      className: 'bg-blue-100 text-blue-800 border-blue-200',
-    },
-    IN_PROGRESS: {
-      label: 'In Progress',
-      className: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    },
-    RESOLVED: {
-      label: 'Resolved',
-      className: 'bg-green-100 text-green-800 border-green-200',
-    },
-    CLOSED: {
-      label: 'Closed',
-      className: 'bg-gray-100 text-gray-800 border-gray-200',
-    },
-  };
-
-const priorityConfig: Record<
-  TicketPriority,
-  { label: string; className: string }
-> = {
-  LOW: { label: 'Low', className: 'text-muted-foreground' },
-  MEDIUM: { label: 'Medium', className: 'text-yellow-600' },
-  HIGH: { label: 'High', className: 'text-orange-600 font-semibold' },
-  URGENT: { label: 'Urgent', className: 'text-red-600 font-bold' },
-};
-
-// ============================================
-// SORTABLE HEADER HELPER
-// ============================================
+import { ArrowUpDown, MoreHorizontal, Trash2 } from 'lucide-react';
+import {
+  canManageTicketActions,
+  canDeleteTicket,
+  type UserWithRole,
+} from '@client/lib/auth';
+import { formatDate } from '@client/lib/format';
+import { priorityConfig, statusConfig } from '@client/lib/tickets';
+import type { TicketOrderBy } from '@client/lib/ticket-params';
+import { DeleteTicketDialog } from '@client/app/dashboard/tickets/delete-ticket-dialog';
 
 function SortableHeader({
   column,
   label,
+  onServerSort,
+  serverSortState,
 }: {
   column: {
+    id: string;
     toggleSorting: (desc?: boolean) => void;
     getIsSorted: () => false | 'asc' | 'desc';
   };
   label: string;
+  onServerSort?: (orderBy: TicketOrderBy, order: SortOrder) => void;
+  serverSortState?: { orderBy: TicketOrderBy; order: SortOrder };
 }) {
+  const handleClick = () => {
+    if (onServerSort) {
+      const orderBy = column.id as TicketOrderBy;
+      const isThisColumn = serverSortState?.orderBy === orderBy;
+      const nextOrder: SortOrder =
+        isThisColumn && serverSortState?.order === SortOrder.ASC
+          ? SortOrder.DESC
+          : SortOrder.ASC;
+      onServerSort(orderBy, nextOrder);
+    } else {
+      column.toggleSorting(column.getIsSorted() === 'asc');
+    }
+  };
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="-ml-3"
-      onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-    >
+    <Button variant="ghost" size="sm" className="-ml-3" onClick={handleClick}>
       {label}
       <ArrowUpDown className="ml-2 h-3 w-3" />
     </Button>
   );
 }
 
-// ============================================
-// COLUMN DEFINITIONS (Type-safe with createColumnHelper)
-// ============================================
-
 const columnHelper = createColumnHelper<Ticket>();
 
-export const columns = [
+export interface TicketColumnsOptions {
+  onServerSort?: (orderBy: TicketOrderBy, order: SortOrder) => void;
+  sortState?: { orderBy: TicketOrderBy; order: SortOrder };
+}
+
+export const getColumns = (
+  user: UserWithRole,
+  options?: TicketColumnsOptions,
+) => [
   columnHelper.accessor('id', {
     header: 'ID',
     cell: (info) => (
@@ -97,16 +83,27 @@ export const columns = [
   }),
 
   columnHelper.accessor('title', {
-    header: ({ column }) => <SortableHeader column={column} label="Title" />,
+    header: 'Title',
+    enableSorting: false,
     cell: (info) => (
-      <span className="block max-w-[300px] truncate font-medium">
+      <Link
+        href={`/dashboard/tickets/${info.row.original.id}`}
+        className="hover:text-primary block max-w-75 truncate font-medium transition-colors hover:underline"
+      >
         {info.getValue()}
-      </span>
+      </Link>
     ),
   }),
 
   columnHelper.accessor('status', {
-    header: 'Status',
+    header: ({ column }) => (
+      <SortableHeader
+        column={column}
+        label="Status"
+        onServerSort={options?.onServerSort}
+        serverSortState={options?.sortState}
+      />
+    ),
     cell: (info) => {
       const config = statusConfig[info.getValue()];
       return (
@@ -119,7 +116,14 @@ export const columns = [
   }),
 
   columnHelper.accessor('priority', {
-    header: ({ column }) => <SortableHeader column={column} label="Priority" />,
+    header: ({ column }) => (
+      <SortableHeader
+        column={column}
+        label="Priority"
+        onServerSort={options?.onServerSort}
+        serverSortState={options?.sortState}
+      />
+    ),
     cell: (info) => {
       const config = priorityConfig[info.getValue()];
       return <span className={config.className}>{config.label}</span>;
@@ -128,15 +132,16 @@ export const columns = [
 
   columnHelper.accessor('createdAt', {
     header: ({ column }) => (
-      <SortableHeader column={column} label="Created At" />
+      <SortableHeader
+        column={column}
+        label="Created At"
+        onServerSort={options?.onServerSort}
+        serverSortState={options?.sortState}
+      />
     ),
     cell: (info) => (
       <span className="text-muted-foreground text-sm">
-        {new Date(info.getValue()).toLocaleDateString('en-US', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-        })}
+        {formatDate(info.getValue())}
       </span>
     ),
   }),
@@ -144,32 +149,66 @@ export const columns = [
   columnHelper.display({
     id: 'actions',
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => {
-      const ticket = row.original;
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(ticket.id)}
-            >
-              Copy ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View Details</DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive">
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
+    cell: ({ row }) => <TicketActionsCell ticket={row.original} user={user} />,
   }),
 ];
+
+function TicketActionsCell({
+  ticket,
+  user,
+}: {
+  ticket: Ticket;
+  user: UserWithRole;
+}) {
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  if (!canManageTicketActions(user)) {
+    return null;
+  }
+
+  const showDelete = canDeleteTicket(user);
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem
+            onClick={() => navigator.clipboard.writeText(ticket.id)}
+          >
+            Copy ID
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link href={`/dashboard/tickets/${ticket.id}`}>View Details</Link>
+          </DropdownMenuItem>
+          {showDelete && (
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={(e) => {
+                e.preventDefault();
+                setDeleteOpen(true);
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {showDelete && (
+        <DeleteTicketDialog
+          ticket={ticket}
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+        />
+      )}
+    </>
+  );
+}

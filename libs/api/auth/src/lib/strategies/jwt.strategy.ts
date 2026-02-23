@@ -15,6 +15,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: configService.getOrThrow<string>('jwt.secret'),
+      algorithms: ['HS256'],
     });
   }
 
@@ -25,8 +26,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException(AuthMessages.USER_NOT_FOUND);
     }
 
-    return {
+    const safeUser = {
       ...user,
+      password: undefined,
+    };
+
+    return {
+      ...safeUser,
       jti: payload.jti,
     };
   }

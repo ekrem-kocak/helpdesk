@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import {
   type ColumnDef,
   type SortingState,
@@ -30,9 +30,45 @@ import {
   ChevronsRight,
 } from 'lucide-react';
 
-// ============================================
-// TYPES
-// ============================================
+const SearchToolbarMemo = memo(function SearchToolbar({
+  searchPlaceholder,
+  searchValue,
+  onSearchChange,
+  onSearchSubmit,
+}: {
+  searchPlaceholder: string;
+  searchValue: string;
+  onSearchChange: (value: string) => void;
+  onSearchSubmit?: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <Input
+        type="search"
+        aria-label={searchPlaceholder}
+        placeholder={searchPlaceholder}
+        value={searchValue}
+        onChange={(e) => onSearchChange(e.target.value)}
+        onKeyDown={
+          onSearchSubmit
+            ? (e) => e.key === 'Enter' && onSearchSubmit()
+            : undefined
+        }
+        className="max-w-sm"
+      />
+      {onSearchSubmit && (
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={onSearchSubmit}
+        >
+          Ara
+        </Button>
+      )}
+    </div>
+  );
+});
 
 interface DataTableProps<TData> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -40,17 +76,29 @@ interface DataTableProps<TData> {
   data: TData[];
   searchKey?: string;
   searchPlaceholder?: string;
+  serverSide?: boolean;
+  pageCount?: number;
+  itemCount?: number;
+  pageIndex?: number;
+  onPageChange?: (pageIndex: number) => void;
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
+  onSearchSubmit?: () => void;
 }
-
-// ============================================
-// COMPONENT
-// ============================================
 
 export function DataTable<TData>({
   columns,
   data,
   searchKey,
   searchPlaceholder = 'Search...',
+  serverSide = false,
+  pageCount = 0,
+  itemCount = 0,
+  pageIndex = 0,
+  onPageChange,
+  searchValue,
+  onSearchChange,
+  onSearchSubmit,
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -61,36 +109,99 @@ export function DataTable<TData>({
     state: {
       sorting,
       columnFilters,
+      ...(serverSide && {
+        pagination: { pageIndex, pageSize: 0 },
+      }),
     },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    ...(serverSide
+      ? {
+          manualPagination: true,
+          pageCount,
+        }
+      : {
+          getSortedRowModel: getSortedRowModel(),
+          getFilteredRowModel: getFilteredRowModel(),
+          getPaginationRowModel: getPaginationRowModel(),
+        }),
   });
 
-  const filteredRowCount = table.getFilteredRowModel().rows.length;
+  const displayCount = serverSide
+    ? itemCount
+    : table.getFilteredRowModel().rows.length;
+  const canPrev = serverSide ? pageIndex > 0 : table.getCanPreviousPage();
+  const canNext = serverSide
+    ? pageIndex < pageCount - 1
+    : table.getCanNextPage();
+  const currentPage = serverSide
+    ? pageIndex + 1
+    : table.getState().pagination.pageIndex + 1;
+  const totalPages = serverSide ? Math.max(1, pageCount) : table.getPageCount();
+  const handlePrev = serverSide
+    ? () => onPageChange?.(pageIndex - 1)
+    : () => table.previousPage();
+  const handleNext = serverSide
+    ? () => onPageChange?.(pageIndex + 1)
+    : () => table.nextPage();
+  const handleFirst = serverSide
+    ? () => onPageChange?.(0)
+    : () => table.setPageIndex(0);
+  const handleLast = serverSide
+    ? () => onPageChange?.(pageCount - 1)
+    : () => table.setPageIndex(table.getPageCount() - 1);
+
+  const searchInputValue =
+    serverSide && searchKey && onSearchChange
+      ? (searchValue ?? '')
+      : ((table.getColumn(searchKey ?? '')?.getFilterValue() as string) ?? '');
+  const searchInputOnChange =
+    serverSide && searchKey && onSearchChange
+      ? (e: React.ChangeEvent<HTMLInputElement>) =>
+          onSearchChange(e.target.value)
+      : (e: React.ChangeEvent<HTMLInputElement>) =>
+          table.getColumn(searchKey ?? '')?.setFilterValue(e.target.value);
+
+  const searchToolbar =
+    searchKey && serverSide && onSearchChange ? (
+      <SearchToolbarMemo
+        searchPlaceholder={searchPlaceholder}
+        searchValue={searchInputValue}
+        onSearchChange={onSearchChange}
+        onSearchSubmit={onSearchSubmit}
+      />
+    ) : searchKey ? (
+      <div className="flex items-center gap-2">
+        <Input
+          type="search"
+          aria-label={searchPlaceholder}
+          placeholder={searchPlaceholder}
+          value={searchInputValue}
+          onChange={searchInputOnChange}
+          onKeyDown={
+            onSearchSubmit
+              ? (e) => e.key === 'Enter' && onSearchSubmit()
+              : undefined
+          }
+          className="max-w-sm"
+        />
+        {onSearchSubmit && (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={onSearchSubmit}
+          >
+            Ara
+          </Button>
+        )}
+      </div>
+    ) : null;
 
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
-      {searchKey && (
-        <div className="flex items-center">
-          <Input
-            placeholder={searchPlaceholder}
-            value={
-              (table.getColumn(searchKey)?.getFilterValue() as string) ?? ''
-            }
-            onChange={(e) =>
-              table.getColumn(searchKey)?.setFilterValue(e.target.value)
-            }
-            className="max-w-sm"
-          />
-        </div>
-      )}
-
-      {/* Table */}
+      {searchToolbar}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -139,45 +250,43 @@ export function DataTable<TData>({
           </TableBody>
         </Table>
       </div>
-
-      {/* Pagination */}
       <div className="flex items-center justify-between">
         <p className="text-muted-foreground text-sm">
-          Total {filteredRowCount} records
+          Total {displayCount} records
         </p>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.setPageIndex(0)}
-            disabled={!table.getCanPreviousPage()}
+            onClick={handleFirst}
+            disabled={!canPrev}
           >
             <ChevronsLeft className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            onClick={handlePrev}
+            disabled={!canPrev}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <span className="text-sm font-medium">
-            {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
+            {currentPage} / {totalPages}
           </span>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            onClick={handleNext}
+            disabled={!canNext}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-            disabled={!table.getCanNextPage()}
+            onClick={handleLast}
+            disabled={!canNext}
           >
             <ChevronsRight className="h-4 w-4" />
           </Button>

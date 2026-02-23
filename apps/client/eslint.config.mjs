@@ -9,4 +9,22 @@ export default [
   {
     ignores: ['.next/**/*'],
   },
+  {
+    files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
+    rules: {
+      '@next/next/no-html-link-for-pages': ['error', 'apps/client/pages'],
+      '@nx/enforce-module-boundaries': [
+        'error',
+        {
+          allow: ['@client/**'],
+          depConstraints: [
+            {
+              sourceTag: '*',
+              onlyDependOnLibsWithTags: ['*'],
+            },
+          ],
+        },
+      ],
+    },
+  },
 ];

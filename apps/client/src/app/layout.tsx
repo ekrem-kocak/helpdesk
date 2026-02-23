@@ -1,5 +1,5 @@
 import './global.css';
-import { Providers } from './providers';
+import { Providers } from '@client/app/providers';
 
 export const metadata = {
   title: 'Welcome to client',

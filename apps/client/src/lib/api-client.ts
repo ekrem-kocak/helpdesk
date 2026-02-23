@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { ApiResponse, AuthResponse } from '@helpdesk/shared/interfaces';
-import { useAuthStore } from '../store/auth.store';
+import { useAuthStore } from '@client/store/auth.store';
 
 // ============================================
 // AXIOS INSTANCE

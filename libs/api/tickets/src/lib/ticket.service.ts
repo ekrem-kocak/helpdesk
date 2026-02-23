@@ -1,10 +1,11 @@
 import { AiService } from '@helpdesk/api/ai';
-import { PrismaService, Ticket } from '@helpdesk/api/data-access-db';
+import { Prisma, PrismaService, Ticket } from '@helpdesk/api/data-access-db';
 import { QueueService } from '@helpdesk/api/queue';
-import { PageDto, PageMetaDto, PageOptionsDto } from '@helpdesk/api/shared';
-import { Priority } from '@helpdesk/shared/interfaces';
+import { PageDto, PageMetaDto } from '@helpdesk/api/shared';
+import { Priority, Role, User } from '@helpdesk/shared/interfaces';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
+import { TicketPageOptionsDto } from './dto/ticket-page-options.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 
 @Injectable()
@@ -33,7 +34,7 @@ export class TicketService {
         aiSummary: analysis.summary,
       },
       include: {
-        user: true, // return the user who created the ticket
+        user: true,
       },
     });
 
@@ -47,19 +48,46 @@ export class TicketService {
     return ticket;
   }
 
-  async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<Ticket>> {
+  async findAll(
+    pageOptionsDto: TicketPageOptionsDto,
+    user: User,
+  ): Promise<PageDto<Ticket>> {
+    const where: Prisma.TicketWhereInput = {};
+
+    if (user.role === Role.USER) {
+      where.userId = user.id;
+    }
+
+    if (pageOptionsDto.status != null) {
+      where.status = pageOptionsDto.status;
+    }
+    if (pageOptionsDto.priority != null) {
+      where.priority = pageOptionsDto.priority;
+    }
+    if (pageOptionsDto.search?.trim()) {
+      const term = pageOptionsDto.search.trim();
+      where.OR = [
+        { title: { contains: term, mode: 'insensitive' } },
+        { description: { contains: term, mode: 'insensitive' } },
+      ];
+    }
+
+    const orderByField = pageOptionsDto.orderBy ?? 'createdAt';
+    const orderBy = {
+      [orderByField]: pageOptionsDto.order,
+    } as Prisma.TicketOrderByWithRelationInput;
+
     const [data, itemCount] = await this.prisma.$transaction([
       this.prisma.ticket.findMany({
+        where,
         skip: pageOptionsDto.skip,
         take: pageOptionsDto.take,
-        orderBy: {
-          createdAt: pageOptionsDto.order,
-        },
+        orderBy,
         include: {
           user: true,
         },
       }),
-      this.prisma.ticket.count(),
+      this.prisma.ticket.count({ where }),
     ]);
 
     const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
@@ -77,8 +105,8 @@ export class TicketService {
   }
 
   async findOneById(id: string) {
-    const ticket = await this.prisma.ticket.findUnique({
-      where: { id },
+    const ticket = await this.prisma.ticket.findFirst({
+      where: { id, deletedAt: null },
       include: {
         user: true,
       },
@@ -92,15 +120,33 @@ export class TicketService {
   }
 
   async update(id: string, updateTicketDto: UpdateTicketDto) {
+    const existing = await this.prisma.ticket.findFirst({
+      where: { id, deletedAt: null },
+      select: { id: true },
+    });
+    if (!existing) {
+      throw new NotFoundException('Ticket not found');
+    }
     return this.prisma.ticket.update({
       where: { id },
       data: updateTicketDto,
+      include: {
+        user: true,
+      },
     });
   }
 
-  async delete(id: string) {
-    return this.prisma.ticket.softDelete({
+  async delete(id: string): Promise<void> {
+    const ticket = await this.prisma.ticket.findUnique({
       where: { id },
+      select: { id: true, deletedAt: true },
     });
+    if (!ticket) {
+      throw new NotFoundException('Ticket not found');
+    }
+    if (ticket.deletedAt) {
+      throw new NotFoundException('Ticket not found');
+    }
+    await this.prisma.ticket.softDelete({ where: { id } });
   }
 }

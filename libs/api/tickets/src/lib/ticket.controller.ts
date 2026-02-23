@@ -2,25 +2,40 @@ import {
   ApiPaginatedResponse,
   CurrentUser,
   JwtAuthGuard,
+  Roles,
+  RolesGuard,
 } from '@helpdesk/api/shared';
-import { PageDto, PageOptionsDto } from '@helpdesk/api/shared';
+import { PageDto } from '@helpdesk/api/shared';
+import { TicketPageOptionsDto } from './dto/ticket-page-options.dto';
 import { UserEntity } from '@helpdesk/api/users';
 import {
   Body,
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiForbiddenResponse,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Role } from '@helpdesk/shared/interfaces';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { TicketEntity } from './entities/ticket.entity';
 import { TicketService } from './ticket.service';
+import { TicketOwnershipGuard } from './guards/ticket-ownership.guard';
+import { CanChangeStatusGuard } from './guards/can-change-status.guard';
 
 @ApiTags('Tickets')
 @ApiBearerAuth('JWT-auth')
@@ -39,16 +54,14 @@ export class TicketController {
     return new TicketEntity(ticket);
   }
 
-  // @UseInterceptors(CacheInterceptor)
-  // @CacheKey('all-tickets')
-  // @CacheTTL(30000)
   @Get()
   @ApiPaginatedResponse(TicketEntity, 'Paginated list of tickets')
   @ApiOperation({ summary: 'Get all tickets (Paginated)' })
   async findAll(
-    @Query() pageOptionsDto: PageOptionsDto,
+    @CurrentUser() user: UserEntity,
+    @Query() pageOptionsDto: TicketPageOptionsDto,
   ): Promise<PageDto<TicketEntity>> {
-    const tickets = await this.ticketService.findAll(pageOptionsDto);
+    const tickets = await this.ticketService.findAll(pageOptionsDto, user);
 
     return new PageDto(
       tickets.data.map((ticket) => new TicketEntity(ticket)),
@@ -71,6 +84,7 @@ export class TicketController {
   }
 
   @Patch(':id')
+  @UseGuards(TicketOwnershipGuard, CanChangeStatusGuard)
   @ApiOperation({ summary: 'Update a ticket by ID' })
   async update(
     @Param('id') id: string,
@@ -81,8 +95,14 @@ export class TicketController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete a ticket by ID' })
-  async delete(@Param('id') id: string) {
-    return this.ticketService.delete(id);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Delete a ticket by ID (Admin only)' })
+  @ApiNoContentResponse({ description: 'Ticket deleted successfully' })
+  @ApiNotFoundResponse({ description: 'Ticket not found' })
+  @ApiForbiddenResponse({ description: 'Only admins can delete tickets' })
+  async delete(@Param('id') id: string): Promise<void> {
+    await this.ticketService.delete(id);
   }
 }

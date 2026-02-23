@@ -8,7 +8,6 @@ import * as z from 'zod';
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { Loader2 } from 'lucide-react';
-
 import {
   Button,
   Input,
@@ -24,9 +23,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@helpdesk/shared/ui';
-import { useAuthStore } from '../../../store/auth.store';
-import { apiClient } from '../../../lib/api-client';
-import { ApiResponse, AuthResponse } from '@/libs/shared/interfaces/src';
+import { useAuthStore } from '@client/store/auth.store';
+import { apiClient } from '@client/lib/api-client';
+import { ApiResponse, AuthResponse } from '@helpdesk/shared/interfaces';
 
 const loginSchema = z.object({
   email: z.email('Invalid email'),
@@ -131,7 +130,7 @@ export default function LoginPage() {
               >
                 Login
                 {loginMutation.isPending && (
-                  <Loader2 className="mr-2 inline-block h-4 w-4 animate-spin align-middle" />
+                  <Loader2 className="inline-block h-4 w-4 animate-spin align-middle" />
                 )}
               </Button>
             </form>

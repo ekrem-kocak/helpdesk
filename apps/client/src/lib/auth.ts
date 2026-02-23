@@ -135,3 +135,7 @@ export function canCancelTicket(
 
   return false;
 }
+
+export function canDeleteTicket(user: UserWithRole): boolean {
+  return user?.role === Role.ADMIN;
+}

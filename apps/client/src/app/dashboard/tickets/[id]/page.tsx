@@ -14,6 +14,7 @@ import {
   Zap,
   Edit,
   Ban,
+  Trash2,
 } from 'lucide-react';
 import { useTicket } from '@client/hooks/use-ticket';
 import { useAuthStore } from '@client/store/auth.store';
@@ -25,12 +26,14 @@ import {
   getTicketEditDisabledReason,
   canManageTicketActions,
   canCancelTicket,
+  canDeleteTicket,
 } from '@client/lib/auth';
 import { TICKET, MESSAGES } from '@client/lib/constants';
 import { getErrorMessage } from '@client/lib/errors';
 import { AIInfoCard } from '@client/components/ai-info-card';
 import { EditTicketDialog } from '@client/app/dashboard/tickets/edit-ticket-dialog';
 import { CancelTicketDialog } from '@client/app/dashboard/tickets/cancel-ticket-dialog';
+import { DeleteTicketDialog } from '@client/app/dashboard/tickets/delete-ticket-dialog';
 import {
   Badge,
   Button,
@@ -58,6 +61,7 @@ export default function TicketDetailPage() {
   const canEditByStatus = canEditTicketByStatus(user, ticket);
   const disabledReason = getTicketEditDisabledReason(user, ticket);
   const canCancel = canCancelTicket(user, ticket);
+  const canDelete = canDeleteTicket(user);
 
   if (isLoading) {
     return (
@@ -212,7 +216,7 @@ export default function TicketDetailPage() {
             </CardContent>
           </Card>
 
-          {(canEditByRole || canCancel || isSupport) && (
+          {(canEditByRole || canCancel || canDelete || isSupport) && (
             <Card className="border-muted-foreground/10">
               <CardHeader>
                 <h3 className="flex items-center gap-2 text-sm font-semibold">
@@ -265,6 +269,23 @@ export default function TicketDetailPage() {
                         Cancel Ticket
                       </Button>
                     }
+                  />
+                )}
+
+                {canDelete && (
+                  <DeleteTicketDialog
+                    ticket={ticket}
+                    trigger={
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="hover:bg-muted text-destructive hover:text-destructive w-full justify-start gap-2 text-sm"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Delete Ticket
+                      </Button>
+                    }
+                    onDeleted={() => router.push('/dashboard/tickets')}
                   />
                 )}
 

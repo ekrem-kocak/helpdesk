@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { createColumnHelper } from '@tanstack/react-table';
 import { SortOrder, type Ticket } from '@helpdesk/shared/interfaces';
@@ -13,11 +14,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@helpdesk/shared/ui';
-import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
-import { canManageTicketActions, type UserWithRole } from '@client/lib/auth';
+import { ArrowUpDown, MoreHorizontal, Trash2 } from 'lucide-react';
+import {
+  canManageTicketActions,
+  canDeleteTicket,
+  type UserWithRole,
+} from '@client/lib/auth';
 import { formatDate } from '@client/lib/format';
 import { priorityConfig, statusConfig } from '@client/lib/tickets';
 import type { TicketOrderBy } from '@client/lib/ticket-params';
+import { DeleteTicketDialog } from '@client/app/dashboard/tickets/delete-ticket-dialog';
 
 function SortableHeader({
   column,
@@ -143,44 +149,66 @@ export const getColumns = (
   columnHelper.display({
     id: 'actions',
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => {
-      const ticket = row.original;
-
-      if (!canManageTicketActions(user)) {
-        return null;
-      }
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(ticket.id)}
-            >
-              Copy ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href={`/dashboard/tickets/${ticket.id}`}>View Details</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-destructive"
-              onClick={(e) => {
-                e.preventDefault();
-                console.warn('Delete not implemented yet');
-              }}
-            >
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
+    cell: ({ row }) => <TicketActionsCell ticket={row.original} user={user} />,
   }),
 ];
+
+function TicketActionsCell({
+  ticket,
+  user,
+}: {
+  ticket: Ticket;
+  user: UserWithRole;
+}) {
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  if (!canManageTicketActions(user)) {
+    return null;
+  }
+
+  const showDelete = canDeleteTicket(user);
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem
+            onClick={() => navigator.clipboard.writeText(ticket.id)}
+          >
+            Copy ID
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link href={`/dashboard/tickets/${ticket.id}`}>View Details</Link>
+          </DropdownMenuItem>
+          {showDelete && (
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={(e) => {
+                e.preventDefault();
+                setDeleteOpen(true);
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {showDelete && (
+        <DeleteTicketDialog
+          ticket={ticket}
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+        />
+      )}
+    </>
+  );
+}

@@ -105,8 +105,8 @@ export class TicketService {
   }
 
   async findOneById(id: string) {
-    const ticket = await this.prisma.ticket.findUnique({
-      where: { id },
+    const ticket = await this.prisma.ticket.findFirst({
+      where: { id, deletedAt: null },
       include: {
         user: true,
       },
@@ -120,6 +120,13 @@ export class TicketService {
   }
 
   async update(id: string, updateTicketDto: UpdateTicketDto) {
+    const existing = await this.prisma.ticket.findFirst({
+      where: { id, deletedAt: null },
+      select: { id: true },
+    });
+    if (!existing) {
+      throw new NotFoundException('Ticket not found');
+    }
     return this.prisma.ticket.update({
       where: { id },
       data: updateTicketDto,
@@ -129,9 +136,17 @@ export class TicketService {
     });
   }
 
-  async delete(id: string) {
-    return this.prisma.ticket.softDelete({
+  async delete(id: string): Promise<void> {
+    const ticket = await this.prisma.ticket.findUnique({
       where: { id },
+      select: { id: true, deletedAt: true },
     });
+    if (!ticket) {
+      throw new NotFoundException('Ticket not found');
+    }
+    if (ticket.deletedAt) {
+      throw new NotFoundException('Ticket not found');
+    }
+    await this.prisma.ticket.softDelete({ where: { id } });
   }
 }

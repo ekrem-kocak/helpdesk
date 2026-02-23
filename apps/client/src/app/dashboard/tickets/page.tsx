@@ -14,12 +14,6 @@ import { Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 
-const LOADING_SPINNER = (
-  <div className="flex items-center justify-center p-10">
-    <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
-  </div>
-);
-
 const ERROR_MSG = 'Failed to load tickets.';
 
 export default function TicketsPage() {
@@ -91,7 +85,12 @@ export default function TicketsPage() {
   );
 
   if (isUser) {
-    if (myTicketsLoading) return LOADING_SPINNER;
+    if (myTicketsLoading)
+      return (
+        <div className="flex items-center justify-center p-10">
+          <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
+        </div>
+      );
     if (myTicketsError) {
       return (
         <div className="border-destructive/50 bg-destructive/10 text-destructive rounded-md border p-4">
@@ -125,7 +124,6 @@ export default function TicketsPage() {
     );
   }
 
-  if (isLoading) return LOADING_SPINNER;
   if (isError) {
     return (
       <div className="border-destructive/50 bg-destructive/10 text-destructive rounded-md border p-4">
@@ -148,7 +146,12 @@ export default function TicketsPage() {
             Manage all support tickets and create new ones
           </p>
         </div>
-        <CreateTicketDialog />
+        <div className="flex items-center gap-3">
+          {isLoading && (
+            <Loader2 className="text-muted-foreground h-5 w-5 animate-spin" />
+          )}
+          <CreateTicketDialog />
+        </div>
       </div>
       <DataTable
         columns={columns}

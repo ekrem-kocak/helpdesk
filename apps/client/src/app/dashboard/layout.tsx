@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import AuthGuard from '@client/components/auth.guard';
 import { ThemeToggle } from '@client/components/theme-toggle';
 import { useAuthStore } from '@client/store/auth.store';
+import { logoutAndRedirect } from '@client/lib/auth-client';
 import { LAYOUT, TRANSITIONS } from '@client/lib/constants';
 import {
   LayoutDashboard,
@@ -60,15 +61,13 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
 
   const handleLogout = () => {
-    logout();
-    window.location.href = '/auth/login';
+    void logoutAndRedirect();
   };
 
   const closeMobileMenu = () => {

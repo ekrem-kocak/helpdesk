@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
-import { Loader2, Mail, Lock } from 'lucide-react';
+import { Loader2, Mail, Lock, User } from 'lucide-react';
 import {
   Button,
   Input,
@@ -23,31 +23,44 @@ import { apiClient } from '@client/lib/api-client';
 import type { ApiResponse, AuthResponse } from '@helpdesk/shared/interfaces';
 import { AuthCard } from '@client/components/auth-card';
 
-const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-});
+const registerSchema = z
+  .object({
+    name: z.string().min(2, 'Name must be at least 2 characters'),
+    email: z.email('Please enter a valid email address'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
   const [globalError, setGlobalError] = useState<string | null>(null);
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
 
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
+      name: '',
       email: '',
       password: '',
+      confirmPassword: '',
     },
   });
 
-  const loginMutation = useMutation({
-    mutationFn: async (data: LoginFormValues) => {
+  const registerMutation = useMutation({
+    mutationFn: async (data: RegisterFormValues) => {
       const res = await apiClient.post<ApiResponse<AuthResponse>>(
-        '/auth/login',
-        data,
+        '/auth/register',
+        {
+          name: data.name,
+          email: data.email,
+          password: data.password,
+        },
       );
       return res.data;
     },
@@ -67,19 +80,19 @@ export default function LoginPage() {
     },
   });
 
-  const onSubmit = (data: LoginFormValues) => {
+  const onSubmit = (data: RegisterFormValues) => {
     setGlobalError(null);
-    loginMutation.mutate(data);
+    registerMutation.mutate(data);
   };
 
   return (
     <AuthCard
-      title="Helpdesk"
-      description="Sign in to your account"
+      title="Create account"
+      description="Create your Helpdesk account"
       footer={{
-        label: "Don't have an account?",
-        href: '/auth/register',
-        linkText: 'Sign up',
+        label: 'Already have an account?',
+        href: '/auth/login',
+        linkText: 'Sign in',
       }}
     >
       {globalError && (
@@ -97,6 +110,29 @@ export default function LoginPage() {
           className="space-y-4"
           noValidate
         >
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Full name</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <User className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                    <Input
+                      placeholder="Your name"
+                      type="text"
+                      autoComplete="name"
+                      className="pl-9"
+                      {...field}
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="email"
@@ -131,8 +167,31 @@ export default function LoginPage() {
                     <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
                     <Input
                       type="password"
-                      placeholder="••••••••"
-                      autoComplete="current-password"
+                      placeholder="At least 6 characters"
+                      autoComplete="new-password"
+                      className="pl-9"
+                      {...field}
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Confirm password</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                    <Input
+                      type="password"
+                      placeholder="Confirm your password"
+                      autoComplete="new-password"
                       className="pl-9"
                       {...field}
                     />
@@ -146,15 +205,15 @@ export default function LoginPage() {
           <Button
             type="submit"
             className="w-full"
-            disabled={loginMutation.isPending}
+            disabled={registerMutation.isPending}
           >
-            {loginMutation.isPending ? (
+            {registerMutation.isPending ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                Signing in...
+                Creating account...
               </>
             ) : (
-              'Sign in'
+              'Sign up'
             )}
           </Button>
         </form>

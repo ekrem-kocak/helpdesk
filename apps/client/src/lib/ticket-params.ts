@@ -1,4 +1,5 @@
-import type { Priority, SortOrder, Status } from '@helpdesk/shared/interfaces';
+import type { Priority, Status } from '@helpdesk/shared/interfaces';
+import { SortOrder } from '@helpdesk/shared/interfaces';
 
 export interface TicketListParams {
   page?: number;
@@ -22,7 +23,7 @@ export type TicketOrderBy = (typeof TICKET_ORDER_BY)[number];
 export const DEFAULT_TICKET_LIST_PARAMS: TicketListParams = {
   page: 1,
   take: 10,
-  order: 'desc',
+  order: SortOrder.DESC,
   orderBy: 'createdAt',
   search: '',
 };

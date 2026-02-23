@@ -12,7 +12,7 @@ import type {
   TicketOrderBy,
 } from '@client/lib/ticket-params';
 import { TICKET_ORDER_BY } from '@client/lib/ticket-params';
-import { Priority, Status } from '@helpdesk/shared/interfaces';
+import { Priority, SortOrder, Status } from '@helpdesk/shared/interfaces';
 
 const ticketSearchParsers = {
   page: parseAsInteger.withDefault(1),
@@ -38,7 +38,12 @@ function toTicketListParams(raw: {
   return {
     page: raw.page,
     take: raw.take,
-    order: raw.order,
+    order:
+      raw.order === 'asc'
+        ? SortOrder.ASC
+        : raw.order === 'desc'
+          ? SortOrder.DESC
+          : undefined,
     orderBy: raw.orderBy as TicketOrderBy,
     search: raw.search || undefined,
     status: Object.values(Status).includes(raw.status as Status)

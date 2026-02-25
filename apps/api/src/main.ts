@@ -3,7 +3,10 @@
  * This is only a minimal backend to get started.
  */
 
-import { TransformInterceptor } from '@helpdesk/api/shared';
+import {
+  TransformInterceptor,
+  GlobalExceptionFilter,
+} from '@helpdesk/api/shared';
 import {
   ClassSerializerInterceptor,
   Logger,
@@ -30,6 +33,8 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: true }, // auto-convert payloads to DTO types
     }),
   );
+
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   app.useGlobalInterceptors(
     new TransformInterceptor(),

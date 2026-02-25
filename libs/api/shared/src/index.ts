@@ -5,3 +5,4 @@ export * from './lib/guards';
 export * from './lib/interceptors';
 export * from './lib/shared.module';
 export * from './lib/utils';
+export * from './lib/filters';

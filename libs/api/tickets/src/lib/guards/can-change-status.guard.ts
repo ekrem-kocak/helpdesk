@@ -6,37 +6,78 @@ import {
 } from '@nestjs/common';
 import { Role, Status } from '@helpdesk/shared/interfaces';
 
-/**
- * Guard that prevents regular users from changing ticket status.
- *
- * Permission Rules:
- * - USER: Can only change status to CANCELLED (cancelling their own ticket)
- * - SUPPORT/ADMIN: Can change ticket status to any value
- */
+/** Enforces allowed status transitions per role. Requires request.ticket from TicketOwnershipGuard. */
 @Injectable()
 export class CanChangeStatusGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
     const body = request.body;
+    const ticket = request.ticket;
 
     if (!user) {
       throw new ForbiddenException('User not authenticated');
     }
 
-    // If no status change is requested, allow the request
-    // This guard only validates status changes, not other field updates
     if (!body?.status) {
       return true;
     }
 
-    // USER role can only change status to CANCELLED
-    if (user.role === Role.USER && body.status !== Status.CANCELLED) {
+    const targetStatus = body.status as Status;
+    const validStatuses = Object.values(Status);
+    if (!validStatuses.includes(targetStatus)) {
+      throw new ForbiddenException(`Invalid status value: ${body.status}`);
+    }
+
+    if (user.role === Role.ADMIN) {
+      return true;
+    }
+
+    if (!ticket) {
+      throw new ForbiddenException('Ticket not found for status validation');
+    }
+
+    const currentStatus = ticket.status as Status;
+
+    if (currentStatus === targetStatus) {
+      return true;
+    }
+
+    if (user.role === Role.USER) {
+      if (currentStatus === Status.OPEN && targetStatus === Status.CANCELLED) {
+        return true;
+      }
       throw new ForbiddenException(
-        'Regular users can only cancel tickets. For other status changes, please contact support.',
+        'Regular users can only cancel OPEN tickets.',
       );
     }
 
-    return true;
+    if (user.role === Role.SUPPORT) {
+      if (
+        currentStatus === Status.CLOSED ||
+        currentStatus === Status.CANCELLED
+      ) {
+        throw new ForbiddenException(
+          'Support cannot modify CLOSED or CANCELLED tickets.',
+        );
+      }
+
+      const validSupportTransitions: Record<Status, Status[]> = {
+        [Status.OPEN]: [Status.IN_PROGRESS, Status.RESOLVED, Status.CANCELLED],
+        [Status.IN_PROGRESS]: [Status.OPEN, Status.RESOLVED, Status.CANCELLED],
+        [Status.RESOLVED]: [Status.IN_PROGRESS, Status.CLOSED],
+        [Status.CANCELLED]: [],
+        [Status.CLOSED]: [],
+      };
+
+      if (!validSupportTransitions[currentStatus]?.includes(targetStatus)) {
+        throw new ForbiddenException(
+          `Invalid status transition from ${currentStatus} to ${targetStatus} for Support role.`,
+        );
+      }
+      return true;
+    }
+
+    return false;
   }
 }

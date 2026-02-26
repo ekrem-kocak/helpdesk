@@ -44,12 +44,12 @@ export function canEditTicketByRole(
 
 /**
  * Check if user can edit a ticket based on its current status.
- * This determines if the edit button should be disabled.
+ * This determines if the edit button should be disabled for regular edits.
  *
  * Rules:
- * - USER: Can only edit OPEN tickets
+ * - USER: Can edit details only on OPEN tickets
  * - SUPPORT: Can edit all except CLOSED and CANCELLED (final states)
- * - ADMIN: Can edit all tickets (including CLOSED and CANCELLED)
+ * - ADMIN: Can edit all tickets
  */
 export function canEditTicketByStatus(
   user: UserWithRole,
@@ -85,7 +85,7 @@ export function getTicketEditDisabledReason(
   if (!user || !ticket) return '';
 
   if (user.role === Role.USER && ticket.status !== Status.OPEN) {
-    return 'You can only edit tickets with OPEN status';
+    return 'You can only edit OPEN tickets.';
   }
 
   if (
@@ -99,13 +99,63 @@ export function getTicketEditDisabledReason(
 }
 
 /**
+ * Get available status transitions for a user based on the current ticket status.
+ */
+export function getAvailableStatuses(
+  user: UserWithOwnership,
+  ticket: Pick<Ticket, 'userId' | 'status'> | null | undefined,
+): Status[] {
+  if (!user || !ticket) return [];
+
+  const currentStatus = ticket.status;
+
+  if (user.role === Role.ADMIN) {
+    return Object.values(Status);
+  }
+
+  if (user.role === Role.USER) {
+    if (user.id !== ticket.userId) return [];
+
+    const available: Status[] = [currentStatus];
+
+    if (currentStatus === Status.OPEN) {
+      available.push(Status.CANCELLED);
+    }
+
+    return available;
+  }
+
+  if (user.role === Role.SUPPORT) {
+    if (currentStatus === Status.CLOSED || currentStatus === Status.CANCELLED) {
+      return [currentStatus];
+    }
+
+    const transitions: Record<Status, Status[]> = {
+      [Status.OPEN]: [
+        Status.OPEN,
+        Status.IN_PROGRESS,
+        Status.RESOLVED,
+        Status.CANCELLED,
+      ],
+      [Status.IN_PROGRESS]: [
+        Status.IN_PROGRESS,
+        Status.OPEN,
+        Status.RESOLVED,
+        Status.CANCELLED,
+      ],
+      [Status.RESOLVED]: [Status.RESOLVED, Status.IN_PROGRESS, Status.CLOSED],
+      [Status.CANCELLED]: [Status.CANCELLED],
+      [Status.CLOSED]: [Status.CLOSED],
+    };
+
+    return transitions[currentStatus] || [currentStatus];
+  }
+
+  return [currentStatus];
+}
+
+/**
  * Check if user can cancel a ticket.
- * Cancelling is only allowed for non-final state tickets.
- *
- * Rules:
- * - USER: Can cancel only their own OPEN tickets
- * - SUPPORT: Can cancel OPEN, IN_PROGRESS, RESOLVED tickets
- * - ADMIN: Can cancel any ticket except already CLOSED or CANCELLED
  */
 export function canCancelTicket(
   user: UserWithOwnership,
@@ -113,27 +163,16 @@ export function canCancelTicket(
 ): boolean {
   if (!user || !ticket) return false;
 
-  // Already in final state - cannot cancel
-  if (ticket.status === Status.CLOSED || ticket.status === Status.CANCELLED) {
-    return false;
-  }
-
-  // ADMIN can cancel any non-final ticket
   if (user.role === Role.ADMIN) {
-    return true;
+    return (
+      ticket.status !== Status.CLOSED && ticket.status !== Status.CANCELLED
+    );
   }
 
-  // SUPPORT can cancel any non-final ticket
-  if (user.role === Role.SUPPORT) {
-    return true;
-  }
-
-  // USER can only cancel their own OPEN tickets
-  if (user.role === Role.USER) {
-    return user.id === ticket.userId && ticket.status === Status.OPEN;
-  }
-
-  return false;
+  return (
+    getAvailableStatuses(user, ticket).includes(Status.CANCELLED) &&
+    ticket.status !== Status.CANCELLED
+  );
 }
 
 export function canDeleteTicket(user: UserWithRole): boolean {

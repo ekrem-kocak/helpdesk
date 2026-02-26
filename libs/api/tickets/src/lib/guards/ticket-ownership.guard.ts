@@ -8,14 +8,7 @@ import {
 import { PrismaService } from '@helpdesk/api/data-access-db';
 import { Role, Status } from '@helpdesk/shared/interfaces';
 
-/**
- * Guard that validates ticket ownership and edit permissions based on user role and ticket status.
- *
- * Permission Rules:
- * - ADMIN: Can edit all tickets regardless of status
- * - SUPPORT: Can edit all tickets except CLOSED and CANCELLED (final states)
- * - USER: Can only edit their own OPEN tickets
- */
+/** Validates ownership and edit permissions by role; USER may only edit own OPEN tickets (title/description/status). */
 @Injectable()
 export class TicketOwnershipGuard implements CanActivate {
   constructor(private readonly prisma: PrismaService) {}
@@ -41,6 +34,8 @@ export class TicketOwnershipGuard implements CanActivate {
       throw new NotFoundException('Ticket not found');
     }
 
+    request.ticket = ticket;
+
     if (user.role === Role.SUPPORT) {
       if (
         ticket.status === Status.CLOSED ||
@@ -58,9 +53,21 @@ export class TicketOwnershipGuard implements CanActivate {
         throw new ForbiddenException('You can only edit your own tickets');
       }
 
+      const body = request.body || {};
+
       if (ticket.status !== Status.OPEN) {
+        throw new ForbiddenException('You can only edit OPEN tickets.');
+      }
+
+      const allowedKeys = ['title', 'description', 'status'];
+      const bodyKeys = Object.keys(body);
+      const hasForbiddenFields = bodyKeys.some(
+        (key) => !allowedKeys.includes(key),
+      );
+
+      if (hasForbiddenFields) {
         throw new ForbiddenException(
-          'You can only edit tickets with OPEN status',
+          'You cannot update priority or internal fields as a regular user.',
         );
       }
 

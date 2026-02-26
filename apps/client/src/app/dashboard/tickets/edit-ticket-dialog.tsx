@@ -28,8 +28,7 @@ import { Loader2, Save } from 'lucide-react';
 import { useAuthStore } from '@client/store/auth.store';
 import { useUpdateTicket } from '@client/hooks/use-update-ticket';
 import { priorityConfig, statusConfig } from '@client/lib/tickets';
-import { isUserRole, canManageTicketActions } from '@client/lib/auth';
-
+import { isUserRole, getAvailableStatuses } from '@client/lib/auth';
 const editTicketSchema = z.object({
   title: z
     .string()
@@ -62,7 +61,10 @@ export function EditTicketDialog({
   const setOpen = controlledOnOpenChange ?? setInternalOpen;
 
   const isUser = isUserRole(user);
-  const canEditStatus = canManageTicketActions(user);
+  const updateMutation = useUpdateTicket();
+  const availableStatuses = getAvailableStatuses(user, ticket);
+  const canEditStatusField = !isUser && availableStatuses.length > 1;
+  const disableNonStatusFields = updateMutation.isPending;
 
   const form = useForm<EditTicketFormValues>({
     resolver: zodResolver(editTicketSchema),
@@ -92,17 +94,23 @@ export function EditTicketDialog({
     form,
   ]);
 
-  const updateMutation = useUpdateTicket();
-
   const onSubmit = (data: EditTicketFormValues) => {
-    const updateData: Record<string, unknown> = {
-      title: data.title,
-      description: data.description,
-      priority: data.priority,
-    };
+    const updateData: Record<string, unknown> = {};
 
-    if (canEditStatus && data.status) {
+    updateData.title = data.title;
+    updateData.description = data.description;
+
+    if (!isUser) {
+      updateData.priority = data.priority;
+    }
+
+    if (canEditStatusField && data.status) {
       updateData.status = data.status;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      setOpen(false);
+      return;
     }
 
     updateMutation.mutate(
@@ -146,7 +154,7 @@ export function EditTicketDialog({
           <DialogTitle className="text-xl">Edit Ticket</DialogTitle>
           <DialogDescription>
             {isUser
-              ? 'You can only edit title, description, and priority.'
+              ? 'You can edit the title and description of this ticket.'
               : 'Update ticket details and status.'}
           </DialogDescription>
         </DialogHeader>
@@ -171,6 +179,7 @@ export function EditTicketDialog({
                   <FormControl>
                     <Input
                       placeholder="Brief description of your issue"
+                      disabled={disableNonStatusFields}
                       {...field}
                     />
                   </FormControl>
@@ -189,6 +198,7 @@ export function EditTicketDialog({
                     <Textarea
                       placeholder="Tell us more about your issue"
                       rows={4}
+                      disabled={disableNonStatusFields}
                       {...field}
                     />
                   </FormControl>
@@ -197,30 +207,33 @@ export function EditTicketDialog({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="priority"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Priority</FormLabel>
-                  <FormControl>
-                    <select
-                      {...field}
-                      className="border-input bg-background focus-visible:ring-ring/50 focus-visible:border-ring h-9 w-full rounded-lg border px-3 py-1 text-sm shadow-xs outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50"
-                    >
-                      {Object.values(Priority).map((priority) => (
-                        <option key={priority} value={priority}>
-                          {priorityConfig[priority].label}
-                        </option>
-                      ))}
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {!isUser && (
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Priority</FormLabel>
+                    <FormControl>
+                      <select
+                        {...field}
+                        disabled={disableNonStatusFields}
+                        className="border-input bg-background focus-visible:ring-ring/50 focus-visible:border-ring h-9 w-full rounded-lg border px-3 py-1 text-sm shadow-xs outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50"
+                      >
+                        {Object.values(Priority).map((priority) => (
+                          <option key={priority} value={priority}>
+                            {priorityConfig[priority].label}
+                          </option>
+                        ))}
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
-            {canEditStatus && (
+            {canEditStatusField && (
               <FormField
                 control={form.control}
                 name="status"
@@ -230,9 +243,10 @@ export function EditTicketDialog({
                     <FormControl>
                       <select
                         {...field}
+                        disabled={updateMutation.isPending}
                         className="border-input bg-background focus-visible:ring-ring/50 focus-visible:border-ring h-9 w-full rounded-lg border px-3 py-1 text-sm shadow-xs outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50"
                       >
-                        {Object.values(Status).map((status) => (
+                        {availableStatuses.map((status) => (
                           <option key={status} value={status}>
                             {statusConfig[status].label}
                           </option>

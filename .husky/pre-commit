@@ -1,26 +1,11 @@
 #!/usr/bin/env sh
 
-echo "🚀 Pre-commit: Checking affected projects..."
+echo "🚀 Pre-commit: Running lint-staged..."
 
-# compare with HEAD (last commit) to detect Nx changes
-# this way only the changes you are working on (staged/unstaged) are checked
-BASE_SHA="HEAD"
-
-# 0. Format Check (only affected projects)
-echo "💅 (0/3) Checking code formatting..."
-# --base=$BASE_SHA ensures only the changes you are working on are checked
-pnpm exec nx format:check --base=$BASE_SHA
+pnpm exec lint-staged
 if [ $? -ne 0 ]; then
-  echo "🚫 Error: Code formatting check failed. Run 'pnpm exec nx format:write' to fix."
+  echo "🚫 Error: lint-staged failed."
   exit 1
 fi
 
-# 1. Lint Check
-echo "🔍 (1/3) Linting affected projects..."
-pnpm exec nx affected --target=lint --base=$BASE_SHA --parallel=3
-if [ $? -ne 0 ]; then
-  echo "🚫 Error: Lint check failed."
-  exit 1
-fi
-
-echo "✅ Pre-commit checks passed. Committing..."
+echo "✅ Pre-commit checks passed."

@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+
+set -e
+
+# Allow overriding the base branch (useful in CI/custom workflows)
+BASE_BRANCH=${BASE_BRANCH:-origin/main}
+
+echo "🚀 Running affected lint and build before push (base: $BASE_BRANCH)..."
+
+# 1) Lint (only affected projects)
+echo "🔍 (1/2) Linting affected projects..."
+pnpm exec nx affected --target=lint --base=$BASE_BRANCH --parallel=3
+
+# 2) Build (only affected projects)
+echo "📦 (2/2) Building affected projects..."
+pnpm exec nx affected --target=build --base=$BASE_BRANCH --parallel=3
+
+# 3) Tests (enable when available)
+# pnpm exec nx affected --target=test --base=$BASE_BRANCH --parallel=3 --ci
+
+echo "✅ Pre-push checks passed."

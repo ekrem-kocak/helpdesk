@@ -1,6 +1,7 @@
 {
   "name": "@helpdesk/source",
   "version": "0.0.0",
+  "packageManager": "pnpm@10.14.0",
   "license": "MIT",
   "scripts": {
     "start:api": "nx serve api",
@@ -81,6 +82,8 @@
   "devDependencies": {
     "@babel/core": "^7.14.5",
     "@babel/preset-react": "^7.14.5",
+    "@commitlint/cli": "^20.4.2",
+    "@commitlint/config-conventional": "^20.4.2",
     "@eslint/js": "^9.8.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.0",
@@ -125,6 +128,7 @@
     "jest-util": "^30.0.2",
     "jsdom": "^27.1.0",
     "jsonc-eslint-parser": "^2.1.0",
+    "lint-staged": "^16.3.1",
     "nx": "22.3.3",
     "postcss": "^8.5.6",
     "prettier": "~3.6.2",
@@ -142,5 +146,18 @@
     "typescript-eslint": "^8.40.0",
     "vitest": "^4.0.8",
     "webpack-cli": "^5.1.4"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix --max-warnings=0",
+      "prettier --write"
+    ],
+    "*.{js,jsx,mjs,cjs}": [
+      "eslint --fix --max-warnings=0",
+      "prettier --write"
+    ],
+    "*.{json,md,html,scss,css,yml,yaml}": [
+      "prettier --write"
+    ]
   }
 }

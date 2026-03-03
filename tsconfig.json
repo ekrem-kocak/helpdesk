@@ -1,0 +1,9 @@
+// This file exist only to make the shadcn-ui cli happy ¯\_(ツ)_/¯
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}

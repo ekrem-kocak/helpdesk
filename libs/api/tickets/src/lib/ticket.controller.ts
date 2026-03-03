@@ -36,6 +36,7 @@ import { TicketEntity } from './entities/ticket.entity';
 import { TicketService } from './ticket.service';
 import { TicketOwnershipGuard } from './guards/ticket-ownership.guard';
 import { CanChangeStatusGuard } from './guards/can-change-status.guard';
+import { CanChangePriorityGuard } from './guards/can-change-priority.guard';
 
 @ApiTags('Tickets')
 @ApiBearerAuth('JWT-auth')
@@ -84,7 +85,7 @@ export class TicketController {
   }
 
   @Patch(':id')
-  @UseGuards(TicketOwnershipGuard, CanChangeStatusGuard)
+  @UseGuards(TicketOwnershipGuard, CanChangeStatusGuard, CanChangePriorityGuard)
   @ApiOperation({ summary: 'Update a ticket by ID' })
   async update(
     @Param('id') id: string,

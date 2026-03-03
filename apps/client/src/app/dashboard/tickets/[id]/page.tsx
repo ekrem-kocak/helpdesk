@@ -16,10 +16,10 @@ import {
   Ban,
   Trash2,
 } from 'lucide-react';
-import { useTicket } from '@client/hooks/use-ticket';
-import { useAuthStore } from '@client/store/auth.store';
-import { formatDate } from '@client/lib/format';
-import { statusConfig, priorityConfig } from '@client/lib/tickets';
+import { useTicket } from '../../../../hooks/use-ticket';
+import { useAuthStore } from '../../../../store/auth.store';
+import { formatDate } from '../../../../lib/format';
+import { statusConfig, priorityConfig } from '../../../../lib/tickets';
 import {
   canEditTicketByRole,
   canEditTicketByStatus,
@@ -27,13 +27,15 @@ import {
   canManageTicketActions,
   canCancelTicket,
   canDeleteTicket,
-} from '@client/lib/auth';
-import { TICKET, MESSAGES } from '@client/lib/constants';
-import { getErrorMessage } from '@client/lib/errors';
-import { AIInfoCard } from '@client/components/ai-info-card';
-import { EditTicketDialog } from '@client/app/dashboard/tickets/edit-ticket-dialog';
-import { CancelTicketDialog } from '@client/app/dashboard/tickets/cancel-ticket-dialog';
-import { DeleteTicketDialog } from '@client/app/dashboard/tickets/delete-ticket-dialog';
+} from '../../../../lib/auth';
+import { TICKET, MESSAGES } from '../../../../lib/constants';
+import { getErrorMessage } from '../../../../lib/errors';
+import { AIInfoCard } from '../../../../components/ai-info-card';
+import { EditTicketDialog } from '../edit-ticket-dialog';
+import { CancelTicketDialog } from '../cancel-ticket-dialog';
+import { DeleteTicketDialog } from '../delete-ticket-dialog';
+import { ChangePriorityDialog } from '../change-priority-dialog';
+import { ChangeStatusDialog } from '../change-status-dialog';
 import {
   Badge,
   Button,
@@ -47,6 +49,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@helpdesk/shared/ui';
+import { Role, Status } from '@helpdesk/shared/interfaces';
 
 export default function TicketDetailPage() {
   const params = useParams();
@@ -62,6 +65,39 @@ export default function TicketDetailPage() {
   const disabledReason = getTicketEditDisabledReason(user, ticket);
   const canCancel = canCancelTicket(user, ticket);
   const canDelete = canDeleteTicket(user);
+  const canChangePriority =
+    (isSupport &&
+      ticket?.status !== Status.CLOSED &&
+      ticket?.status !== Status.CANCELLED) ||
+    user?.role === Role.ADMIN;
+
+  const validSupportTransitions: Record<Status, Status[]> = {
+    [Status.OPEN]: [
+      Status.IN_PROGRESS,
+      Status.RESOLVED,
+      Status.CANCELLED,
+      Status.OPEN,
+    ],
+    [Status.IN_PROGRESS]: [
+      Status.OPEN,
+      Status.RESOLVED,
+      Status.CANCELLED,
+      Status.IN_PROGRESS,
+    ],
+    [Status.RESOLVED]: [Status.IN_PROGRESS, Status.CLOSED, Status.RESOLVED],
+    [Status.CANCELLED]: [],
+    [Status.CLOSED]: [],
+  };
+
+  const allowedStatuses = ticket
+    ? user?.role === Role.ADMIN
+      ? Object.values(Status)
+      : isSupport
+        ? validSupportTransitions[ticket.status as Status] || []
+        : []
+    : [];
+
+  const canChangeStatus = allowedStatuses.length > 1;
 
   if (isLoading) {
     return (
@@ -291,24 +327,57 @@ export default function TicketDetailPage() {
 
                 {isSupport && (
                   <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="hover:bg-muted w-full justify-start gap-2 text-sm"
-                      disabled
-                    >
-                      <Flag className="h-3.5 w-3.5" />
-                      Change Status
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="hover:bg-muted w-full justify-start gap-2 text-sm"
-                      disabled
-                    >
-                      <AlertCircle className="h-3.5 w-3.5" />
-                      Change Priority
-                    </Button>
+                    {canChangeStatus ? (
+                      <ChangeStatusDialog
+                        ticket={ticket}
+                        allowedStatuses={allowedStatuses}
+                        trigger={
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="hover:bg-muted w-full justify-start gap-2 text-sm"
+                          >
+                            <Flag className="h-3.5 w-3.5" />
+                            Change Status
+                          </Button>
+                        }
+                      />
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="hover:bg-muted w-full justify-start gap-2 text-sm"
+                        disabled
+                      >
+                        <Flag className="h-3.5 w-3.5" />
+                        Change Status
+                      </Button>
+                    )}
+                    {canChangePriority ? (
+                      <ChangePriorityDialog
+                        ticket={ticket}
+                        trigger={
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="hover:bg-muted w-full justify-start gap-2 text-sm"
+                          >
+                            <AlertCircle className="h-3.5 w-3.5" />
+                            Change Priority
+                          </Button>
+                        }
+                      />
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="hover:bg-muted w-full justify-start gap-2 text-sm"
+                        disabled
+                      >
+                        <AlertCircle className="h-3.5 w-3.5" />
+                        Change Priority
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"

@@ -8,6 +8,7 @@ export * from './ui/dropdown-menu';
 export * from './ui/avatar';
 export * from './ui/separator';
 export * from './ui/tooltip';
+export * from './ui/select';
 export * from './ui/table';
 export * from './ui/textarea';
 export * from './ui/dialog';

@@ -1,16 +1,17 @@
 'use client';
 
-import { getColumns } from '@client/app/dashboard/tickets/columns';
-import { CreateTicketDialog } from '@client/app/dashboard/tickets/create-ticket-dialog';
-import { UserTicketsView } from '@client/app/dashboard/tickets/user-tickets-view';
-import { DataTable } from '@client/components/data-table';
-import { useTicketSearchParams } from '@client/hooks/use-ticket-search-params';
-import { useMyTickets, useTickets } from '@client/hooks/use-tickets';
-import { isUserRole } from '@client/lib/auth';
-import type { TicketOrderBy } from '@client/lib/ticket-params';
-import { useAuthStore } from '@client/store/auth.store';
+import { getColumns } from './columns';
+import { CreateTicketDialog } from './create-ticket-dialog';
+import { UserTicketsView } from './user-tickets-view';
+import { DataTable } from '../../../components/data-table';
+import { useTicketSearchParams } from '../../../hooks/use-ticket-search-params';
+import { useMyTickets, useTickets } from '../../../hooks/use-tickets';
+import { isUserRole, canRestoreTicket } from '../../../lib/auth';
+import { TicketOrderBy } from '../../../lib/ticket-params';
+import { useAuthStore } from '../../../store/auth.store';
 import type { SortOrder } from '@helpdesk/shared/interfaces';
-import { Loader2 } from 'lucide-react';
+import { Button } from '@helpdesk/shared/ui';
+import { Loader2, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 
@@ -28,6 +29,9 @@ export default function TicketsPage() {
     params: isUser ? null : params,
     enabled: !isUser,
   });
+
+  const showDeletedToggle = !isUser && canRestoreTicket(user);
+  const isShowingDeleted = params.onlyDeleted === true;
 
   const {
     tickets: myTickets,
@@ -80,9 +84,18 @@ export default function TicketsPage() {
       getColumns(user, {
         onServerSort: handleServerSort,
         sortState,
+        showDeletedAt: isShowingDeleted,
       }),
-    [user, handleServerSort, sortState],
+    [user, handleServerSort, sortState, isShowingDeleted],
   );
+
+  const handleToggleShowDeleted = useCallback(() => {
+    setParams({
+      ...paramsRef.current,
+      onlyDeleted: !isShowingDeleted,
+      page: 1,
+    });
+  }, [isShowingDeleted, setParams]);
 
   if (isUser) {
     if (myTicketsLoading)
@@ -147,6 +160,18 @@ export default function TicketsPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {showDeletedToggle && (
+            <Button
+              type="button"
+              variant={isShowingDeleted ? 'secondary' : 'outline'}
+              size="sm"
+              onClick={handleToggleShowDeleted}
+              className="gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              {isShowingDeleted ? 'Showing deleted' : 'Show deleted'}
+            </Button>
+          )}
           {isLoading && (
             <Loader2 className="text-muted-foreground h-5 w-5 animate-spin" />
           )}

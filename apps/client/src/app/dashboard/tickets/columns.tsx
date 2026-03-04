@@ -14,16 +14,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@helpdesk/shared/ui';
-import { ArrowUpDown, MoreHorizontal, Trash2 } from 'lucide-react';
+import { ArrowUpDown, MoreHorizontal, RotateCcw, Trash2 } from 'lucide-react';
 import {
   canManageTicketActions,
   canDeleteTicket,
-  type UserWithRole,
-} from '@client/lib/auth';
-import { formatDate } from '@client/lib/format';
-import { priorityConfig, statusConfig } from '@client/lib/tickets';
-import type { TicketOrderBy } from '@client/lib/ticket-params';
-import { DeleteTicketDialog } from '@client/app/dashboard/tickets/delete-ticket-dialog';
+  canRestoreTicket,
+  UserWithRole,
+} from '../../../lib/auth';
+import { formatDate } from '../../../lib/format';
+import { priorityConfig, statusConfig } from '../../../lib/tickets';
+import { TicketOrderBy } from '../../../lib/ticket-params';
+import { DeleteTicketDialog } from './delete-ticket-dialog';
+import { RestoreTicketDialog } from './restore-ticket-dialog';
 
 function SortableHeader({
   column,
@@ -66,6 +68,8 @@ const columnHelper = createColumnHelper<Ticket>();
 export interface TicketColumnsOptions {
   onServerSort?: (orderBy: TicketOrderBy, order: SortOrder) => void;
   sortState?: { orderBy: TicketOrderBy; order: SortOrder };
+  /** When true, show deletedAt column and Restore action for deleted tickets. */
+  showDeletedAt?: boolean;
 }
 
 export const getColumns = (
@@ -146,10 +150,34 @@ export const getColumns = (
     ),
   }),
 
+  ...(options?.showDeletedAt
+    ? [
+        columnHelper.accessor('deletedAt', {
+          header: 'Deleted At',
+          cell: (info) => {
+            const value = info.getValue();
+            return value ? (
+              <span className="text-muted-foreground text-sm">
+                {formatDate(value)}
+              </span>
+            ) : (
+              <span className="text-muted-foreground">—</span>
+            );
+          },
+        }),
+      ]
+    : []),
+
   columnHelper.display({
     id: 'actions',
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => <TicketActionsCell ticket={row.original} user={user} />,
+    cell: ({ row }) => (
+      <TicketActionsCell
+        ticket={row.original}
+        user={user}
+        showDeletedAt={options?.showDeletedAt}
+      />
+    ),
   }),
 ];
 
@@ -159,14 +187,18 @@ function TicketActionsCell({
 }: {
   ticket: Ticket;
   user: UserWithRole;
+  showDeletedAt?: boolean;
 }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [restoreOpen, setRestoreOpen] = useState(false);
 
   if (!canManageTicketActions(user)) {
     return null;
   }
 
-  const showDelete = canDeleteTicket(user);
+  const isDeleted = Boolean(ticket.deletedAt);
+  const showDelete = canDeleteTicket(user) && !isDeleted;
+  const showRestore = canRestoreTicket(user) && isDeleted;
 
   return (
     <>
@@ -200,6 +232,17 @@ function TicketActionsCell({
               Delete
             </DropdownMenuItem>
           )}
+          {showRestore && (
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.preventDefault();
+                setRestoreOpen(true);
+              }}
+            >
+              <RotateCcw className="h-4 w-4" />
+              Restore
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
       {showDelete && (
@@ -207,6 +250,13 @@ function TicketActionsCell({
           ticket={ticket}
           open={deleteOpen}
           onOpenChange={setDeleteOpen}
+        />
+      )}
+      {showRestore && (
+        <RestoreTicketDialog
+          ticket={ticket}
+          open={restoreOpen}
+          onOpenChange={setRestoreOpen}
         />
       )}
     </>

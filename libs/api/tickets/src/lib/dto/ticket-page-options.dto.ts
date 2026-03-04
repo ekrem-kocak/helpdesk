@@ -1,5 +1,12 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
+import { Transform } from 'class-transformer';
 import { PageOptionsDto } from '@helpdesk/api/shared';
 import { Priority, Status } from '@helpdesk/shared/interfaces';
 
@@ -35,4 +42,14 @@ export class TicketPageOptionsDto extends PageOptionsDto {
   @IsEnum(Priority)
   @IsOptional()
   readonly priority?: Priority;
+
+  @ApiPropertyOptional({
+    description:
+      'Include only soft-deleted tickets (Admin only). Default: false.',
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === true || value === 'true')
+  readonly onlyDeleted?: boolean;
 }

@@ -3,7 +3,11 @@ import { Prisma, PrismaService, Ticket } from '@helpdesk/api/data-access-db';
 import { QueueService } from '@helpdesk/api/queue';
 import { PageDto, PageMetaDto } from '@helpdesk/api/shared';
 import { Priority, Role, User } from '@helpdesk/shared/interfaces';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { TicketPageOptionsDto } from './dto/ticket-page-options.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
@@ -54,8 +58,14 @@ export class TicketService {
   ): Promise<PageDto<Ticket>> {
     const where: Prisma.TicketWhereInput = {};
 
+    // USER can only see their own tickets
     if (user.role === Role.USER) {
       where.userId = user.id;
+    }
+
+    // Admin-only: list only soft-deleted tickets when onlyDeleted=true
+    if (user.role === Role.ADMIN && pageOptionsDto.onlyDeleted === true) {
+      where.deletedAt = { not: null };
     }
 
     if (pageOptionsDto.status != null) {
@@ -104,18 +114,23 @@ export class TicketService {
     });
   }
 
-  async findOneById(id: string) {
+  async findOneById(id: string, user: User) {
+    if (user.role === Role.ADMIN) {
+      const ticket = await this.prisma.ticket.findUnique({
+        where: { id },
+        include: { user: true },
+      });
+      if (!ticket) throw new NotFoundException('Ticket not found');
+      return ticket;
+    }
+
     const ticket = await this.prisma.ticket.findFirst({
       where: { id, deletedAt: null },
       include: {
         user: true,
       },
     });
-
-    if (!ticket) {
-      throw new NotFoundException('Ticket not found');
-    }
-
+    if (!ticket) throw new NotFoundException('Ticket not found');
     return ticket;
   }
 
@@ -148,5 +163,22 @@ export class TicketService {
       throw new NotFoundException('Ticket not found');
     }
     await this.prisma.ticket.softDelete({ where: { id } });
+  }
+
+  async restore(id: string) {
+    const ticket = await this.prisma.ticket.findUnique({
+      where: { id },
+      select: { id: true, deletedAt: true },
+    });
+    if (!ticket) {
+      throw new NotFoundException('Ticket not found');
+    }
+    if (!ticket.deletedAt) {
+      throw new BadRequestException('Ticket is not deleted');
+    }
+    return this.prisma.ticket.restore({
+      where: { id },
+      include: { user: true },
+    });
   }
 }

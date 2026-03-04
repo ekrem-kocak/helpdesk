@@ -15,6 +15,7 @@ import {
   Edit,
   Ban,
   Trash2,
+  RotateCcw,
 } from 'lucide-react';
 import { useTicket } from '../../../../hooks/use-ticket';
 import { useAuthStore } from '../../../../store/auth.store';
@@ -27,6 +28,7 @@ import {
   canManageTicketActions,
   canCancelTicket,
   canDeleteTicket,
+  canRestoreTicket,
 } from '../../../../lib/auth';
 import { TICKET, MESSAGES } from '../../../../lib/constants';
 import { getErrorMessage } from '../../../../lib/errors';
@@ -34,6 +36,7 @@ import { AIInfoCard } from '../../../../components/ai-info-card';
 import { EditTicketDialog } from '../edit-ticket-dialog';
 import { CancelTicketDialog } from '../cancel-ticket-dialog';
 import { DeleteTicketDialog } from '../delete-ticket-dialog';
+import { RestoreTicketDialog } from '../restore-ticket-dialog';
 import { ChangePriorityDialog } from '../change-priority-dialog';
 import { ChangeStatusDialog } from '../change-status-dialog';
 import {
@@ -65,6 +68,8 @@ export default function TicketDetailPage() {
   const disabledReason = getTicketEditDisabledReason(user, ticket);
   const canCancel = canCancelTicket(user, ticket);
   const canDelete = canDeleteTicket(user);
+  const canRestore = canRestoreTicket(user);
+  const isDeleted = Boolean(ticket?.deletedAt);
   const canChangePriority =
     (isSupport &&
       ticket?.status !== Status.CLOSED &&
@@ -201,6 +206,17 @@ export default function TicketDetailPage() {
                         {formatDate(ticket.updatedAt)}
                       </span>
                     </div>
+                    {isDeleted && ticket.deletedAt && (
+                      <div className="flex items-center gap-2">
+                        <Trash2 className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
+                        <span className="text-muted-foreground text-xs">
+                          Deleted:
+                        </span>
+                        <span className="font-medium">
+                          {formatDate(ticket.deletedAt)}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -252,7 +268,11 @@ export default function TicketDetailPage() {
             </CardContent>
           </Card>
 
-          {(canEditByRole || canCancel || canDelete || isSupport) && (
+          {(canEditByRole ||
+            canCancel ||
+            canDelete ||
+            canRestore ||
+            isSupport) && (
             <Card className="border-muted-foreground/10">
               <CardHeader>
                 <h3 className="flex items-center gap-2 text-sm font-semibold">
@@ -262,7 +282,7 @@ export default function TicketDetailPage() {
               </CardHeader>
               <Separator />
               <CardContent className="space-y-2">
-                {canEditByRole && ticket && (
+                {canEditByRole && ticket && !isDeleted && (
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -292,7 +312,7 @@ export default function TicketDetailPage() {
                   </TooltipProvider>
                 )}
 
-                {canCancel && (
+                {canCancel && !isDeleted && (
                   <CancelTicketDialog
                     ticket={ticket}
                     trigger={
@@ -308,7 +328,7 @@ export default function TicketDetailPage() {
                   />
                 )}
 
-                {canDelete && (
+                {canDelete && !isDeleted && (
                   <DeleteTicketDialog
                     ticket={ticket}
                     trigger={
@@ -325,7 +345,23 @@ export default function TicketDetailPage() {
                   />
                 )}
 
-                {isSupport && (
+                {canRestore && isDeleted && (
+                  <RestoreTicketDialog
+                    ticket={ticket}
+                    onRestored={() => router.push('/dashboard/tickets')}
+                    trigger={
+                      <Button
+                        size="sm"
+                        className="hover:bg-muted w-full justify-start gap-2 text-sm"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" />
+                        Restore Ticket
+                      </Button>
+                    }
+                  />
+                )}
+
+                {isSupport && !isDeleted && (
                   <>
                     {canChangeStatus ? (
                       <ChangeStatusDialog

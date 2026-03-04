@@ -9,6 +9,7 @@ export interface TicketListParams {
   search?: string;
   status?: Status;
   priority?: Priority;
+  onlyDeleted?: boolean;
 }
 
 export const TICKET_ORDER_BY = [
@@ -39,5 +40,6 @@ export function ticketListParamsToSearch(
   if (params.search?.trim()) q['search'] = params.search.trim();
   if (params.status) q['status'] = params.status;
   if (params.priority) q['priority'] = params.priority;
+  if (params.onlyDeleted === true) q['onlyDeleted'] = 'true';
   return q;
 }

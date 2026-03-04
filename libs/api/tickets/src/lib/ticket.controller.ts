@@ -79,8 +79,8 @@ export class TicketController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a ticket by ID' })
-  async findOneById(@Param('id') id: string) {
-    const ticket = await this.ticketService.findOneById(id);
+  async findOneById(@Param('id') id: string, @CurrentUser() user: UserEntity) {
+    const ticket = await this.ticketService.findOneById(id, user);
     return new TicketEntity(ticket);
   }
 
@@ -92,6 +92,15 @@ export class TicketController {
     @Body() updateTicketDto: UpdateTicketDto,
   ) {
     const ticket = await this.ticketService.update(id, updateTicketDto);
+    return new TicketEntity(ticket);
+  }
+
+  @Post(':id/restore')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Restore a soft-deleted ticket (Admin only)' })
+  async restore(@Param('id') id: string) {
+    const ticket = await this.ticketService.restore(id);
     return new TicketEntity(ticket);
   }
 

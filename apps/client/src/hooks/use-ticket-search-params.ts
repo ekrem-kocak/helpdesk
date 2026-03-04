@@ -2,16 +2,14 @@
 
 import {
   useQueryStates,
+  parseAsBoolean,
   parseAsInteger,
   parseAsString,
   parseAsStringLiteral,
 } from 'nuqs';
 import { useMemo } from 'react';
-import type {
-  TicketListParams,
-  TicketOrderBy,
-} from '@client/lib/ticket-params';
-import { TICKET_ORDER_BY } from '@client/lib/ticket-params';
+import { TicketListParams, TicketOrderBy } from '../lib/ticket-params';
+import { TICKET_ORDER_BY } from '../lib/ticket-params';
 import { Priority, SortOrder, Status } from '@helpdesk/shared/interfaces';
 
 const ticketSearchParsers = {
@@ -24,6 +22,7 @@ const ticketSearchParsers = {
   search: parseAsString.withDefault(''),
   status: parseAsString.withDefault(''),
   priority: parseAsString.withDefault(''),
+  onlyDeleted: parseAsBoolean.withDefault(false),
 };
 
 function toTicketListParams(raw: {
@@ -34,6 +33,7 @@ function toTicketListParams(raw: {
   search: string;
   status: string;
   priority: string;
+  onlyDeleted: boolean;
 }): TicketListParams {
   return {
     page: raw.page,
@@ -52,6 +52,7 @@ function toTicketListParams(raw: {
     priority: Object.values(Priority).includes(raw.priority as Priority)
       ? (raw.priority as Priority)
       : undefined,
+    onlyDeleted: raw.onlyDeleted || undefined,
   };
 }
 

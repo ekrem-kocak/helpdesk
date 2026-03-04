@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Prisma } from '../../generated/prisma/client';
 
 export const softDeleteExtension = Prisma.defineExtension({
@@ -19,14 +20,12 @@ export const softDeleteExtension = Prisma.defineExtension({
 
       async restore<M, A>(
         this: M,
-        args: { where: Prisma.Args<M, 'update'>['where'] },
+        args: Omit<Prisma.Args<M, 'update'>, 'data'>,
       ): Promise<Prisma.Result<M, A, 'update'>> {
         const context = Prisma.getExtensionContext(this);
         return (context as any).update({
           ...args,
-          data: {
-            deletedAt: null,
-          },
+          data: { deletedAt: null },
         });
       },
     },
@@ -37,7 +36,7 @@ export const autoFilterSoftDeletedExtension = Prisma.defineExtension({
   name: 'auto-filter-soft-deleted',
   query: {
     $allModels: {
-      async $allOperations({ model, operation, args, query }) {
+      async $allOperations({ operation, args, query }) {
         if (
           operation === 'findFirst' ||
           operation === 'findMany' ||
